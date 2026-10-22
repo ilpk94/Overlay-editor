@@ -1,1 +1,0 @@
-An easy editor for retroarch overlays, made with Claude
