@@ -184,4 +184,759 @@ body.fs #fsmsg:not([hidden]){display:block;position:absolute;left:50%;top:calc(5
           <p class="hint" id="repnote">Es.: selezioni "l" (L1) e lo trasformi in "save_state". Con Annulla puoi tornare indietro.</p>
         </div>
       </details>
-      <label class="fld">Immagine del t
+      <label class="fld">Immagine del tasto<select id="simg"></select></label>
+      <div class="row"><button id="ddup" class="btn sm">Duplica</button><button id="ddel" class="btn sm danger">Elimina</button></div>
+      <button id="bfix" class="btn sm" hidden>Ripara croce (come nel file originale)</button>
+      <p class="hint" id="fixh" hidden>La croce si sposta e si ridimensiona sempre tutta insieme. Se è già storta, "Ripara" la rimette in forma mantenendo posizione e dimensione attuali.</p>
+    </div>
+    <div class="card">
+      <h2>Aggiungi tasto</h2>
+      <label class="fld">Funzione<select id="addsel"><optgroup label="Azioni di RetroArch"><option value="save_state">Salva stato</option><option value="load_state">Carica stato</option><option value="toggle_fast_forward">Velocizza (attiva/disattiva)</option><option value="hold_fast_forward">Velocizza (tieni premuto)</option><option value="toggle_slowmotion">Rallenta (attiva/disattiva)</option><option value="hold_slowmotion">Rallenta (tieni premuto)</option><option value="rewind">Riavvolgi</option><option value="pause_toggle">Pausa</option><option value="frame_advance">Avanza di un frame</option><option value="state_slot_increase">Slot salvataggio +</option><option value="state_slot_decrease">Slot salvataggio −</option><option value="reset">Reset</option><option value="screenshot">Screenshot</option><option value="fps_toggle">Mostra FPS</option><option value="menu_toggle">Menu di RetroArch</option><option value="overlay_next">Overlay successivo</option><option value="mute">Muto</option><option value="volume_up">Volume +</option><option value="volume_down">Volume −</option><option value="exit_emulator">Esci dall'emulatore</option></optgroup><optgroup label="Tasti del gioco"><option value="a">A</option><option value="b">B</option><option value="x">X</option><option value="y">Y</option><option value="l">L</option><option value="r">R</option><option value="l2">L2</option><option value="r2">R2</option><option value="l3">L3</option><option value="r3">R3</option><option value="start">start</option><option value="select">select</option></optgroup></select></label>
+      <button id="addbtn" class="btn p">+ Aggiungi a questa versione</button>
+      <p class="hint" id="addnote">Il tasto compare in un punto libero: trascinalo dove vuoi. Se non l'hai già caricata nel file, la grafica va impostata in Avanzate › Immagine.</p>
+    </div>
+    <div class="card" id="dircard">
+      <h2>Cartella delle immagini</h2>
+      <p class="hint" id="dirinfo"></p>
+      <label class="btn sm fbtn">Carica una cartella di immagini<input type="file" id="fdir" webkitdirectory multiple></label>
+      <p class="hint">Serve per vedere le icone vere e scegliere tra più set. Se il browser non permette di scegliere una cartella, usa "Immagini tasti" e seleziona più file.</p>
+      <label class="fld">Cartella da usare<input id="dirin" list="dirlist" placeholder="es. img/clear" autocomplete="off"></label><datalist id="dirlist"></datalist>
+      <label class="fld">Applica a<select id="dirscope"><option value="sel">Solo i tasti selezionati</option><option value="ver" selected>Tutti i tasti di questa versione</option><option value="all">Tutti i tasti, in tutte le versioni</option></select></label>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="dirpref" checked style="width:auto">Usa questa cartella anche per le icone delle nuove funzioni</label>
+      <button id="dirapply" class="btn p">Applica cartella</button>
+      <p class="hint" id="dirnote"></p>
+    </div>
+    <div class="card" id="gencard" hidden>
+      <h2>Icone create</h2>
+      <p class="hint" id="gentxt"></p>
+      <div class="row" id="genbtns"></div>
+    </div>
+    <div class="card">
+      <h2>Sposta tutti i tasti di gioco</h2>
+      <div class="pad">
+        <i></i><button class="btn" data-mv="0,-.01" aria-label="Su">↑</button><i></i>
+        <button class="btn" data-mv="-.01,0" aria-label="Sinistra">←</button><i></i><button class="btn" data-mv=".01,0" aria-label="Destra">→</button>
+        <i></i><button class="btn" data-mv="0,.01" aria-label="Giù">↓</button><i></i>
+      </div>
+      <p class="hint">Start, select e icone del menu restano fermi. Vale solo per la versione scelta in alto.</p>
+    </div>
+    <div class="card">
+      <details>
+        <summary><h2>Avanzate</h2></summary>
+        <div>
+          <label class="fld">Nome overlay<input id="oname"></label>
+          <div class="g2"><label class="fld">range_mod<input id="orm"></label><label class="fld">alpha_mod<input id="oam"></label></div>
+          <div class="row"><button id="oadd" class="btn sm">Nuovo</button><button id="odup" class="btn sm">Duplica</button><button id="odel" class="btn sm danger">Elimina</button></div>
+          <label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="showc" style="width:auto">Mostra zone combinate (es. a|b)</label>
+          <ul id="list"></ul>
+          <button id="dadd" class="btn sm">Aggiungi elemento</button>
+          <div id="fd" hidden style="display:grid;gap:10px">
+            <label class="fld">Input<input id="fn"></label>
+            <div class="g2">
+              <label class="fld">x<input id="fx" inputmode="decimal"></label><label class="fld">y<input id="fy" inputmode="decimal"></label>
+              <label class="fld">Larghezza<input id="fw" inputmode="decimal"></label><label class="fld">Altezza<input id="fh" inputmode="decimal"></label>
+            </div>
+            <label class="fld">Forma<select id="fs"><option>radial</option><option>rect</option></select></label>
+            <label class="fld">Immagine<input id="fi" placeholder="../flat/img/A.png"></label>
+            <label class="fld">Overlay di destinazione<input id="ft" placeholder="solo per overlay_next"></label>
+          </div>
+        </div>
+      </details>
+    </div>
+  </aside>
+</main>
+<div id="pv" hidden>
+  <svg id="pvs" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div id="pvmsg" hidden></div><div id="pvpr" hidden></div>
+  <div id="pvbar"><button class="btn" id="pvx">✕ Esci</button><label>Opacità<input type="range" id="pvop" min="20" max="100" value="70"></label><label><input type="checkbox" id="pvor">Originale</label><label><input type="checkbox" id="pvg">Griglia</label><button class="btn" id="pvt" aria-label="Riduci barra">▾</button></div>
+</div>
+<dialog id="dlg">
+  <form method="dialog">
+    <h2>Quale versione vuoi modificare?</h2>
+    <p class="hint">Se il file ha più varianti (es. analog, turbo), potrai sceglierle dopo dal menu "Versione da modificare".</p>
+    <div class="choices">
+      <button value="landscape"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="4" y="16" width="56" height="32" rx="6"/><circle cx="14" cy="32" r="3"/><circle cx="50" cy="32" r="3"/></svg>Orizzontale</button>
+      <button value="portrait"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="16" y="4" width="32" height="56" rx="6"/><circle cx="32" cy="14" r="3"/><circle cx="32" cy="50" r="3"/></svg>Verticale</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="dsync">
+  <form method="dialog">
+    <h2>Applicare anche a un'altra versione?</h2>
+    <p class="hint">Hai modificato <b id="sa"></b>. Vuoi applicare le stesse modifiche anche a <b id="sb"></b>?<br>Le altre differenze tra le due versioni restano come sono.</p>
+    <div class="choices stack">
+      <button value="yes" class="y">Sì, applica anche all'altra</button>
+      <button value="no">No, solo questa</button>
+    </div>
+  </form>
+</dialog>
+<script>
+const $=id=>document.getElementById(id),f5=v=>(+v).toFixed(5),uq=s=>String(s).replace(/^"|"$/g,''),
+esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const newOv=n=>({props:[['full_screen','true'],['normalized','true'],['name','"'+n+'"'],['range_mod','1.5'],['alpha_mod','2.0']],descs:[],base:[]});
+const newModel=()=>({top:[],overlays:[newOv('landscape')]});
+const gp=(o,k)=>{const p=o.props.find(p=>p[0]===k);return p?p[1]:''};
+const sp=(o,k,v)=>{const p=o.props.find(p=>p[0]===k);p?p[1]=v:o.props.push([k,v])};
+const isUI=a=>/^(menu|overlay_next|toggle|hold_|save_state|load_state|state_slot|rewind|pause|frame_advance|reset|screenshot|fps_|mute|volume|exit|shader)/.test(a.n), isSS=a=>/^(start|select)$/.test(a.n), isGame=a=>!isUI(a)&&!isSS(a);
+let orig=null,M=newModel(),cur=0,sel=-1,sels=new Set(),multi=false,bg='',fname='overlay.cfg',drag=null,hist=[];
+const O=()=>M.overlays[cur],D=()=>O().descs[sel];
+function fixSel(){
+  const n=O().descs.length;if(sel>=n)sel=-1;
+  if(sel<0){sels.clear();return}
+  [...sels].forEach(i=>{if(i>=n)sels.delete(i)});
+  if(!sels.has(sel))sels=new Set([sel]);
+}
+const lastSel=()=>sels.size?[...sels].pop():-1;
+let UID=0;
+const geo=o=>o.descs.map(d=>{if(!d.id)d.id=++UID;return{id:d.id,n:d.in.n,x:d.in.x,y:d.in.y,w:d.in.w,h:d.in.h}});
+const snap=()=>{hist.push(JSON.stringify(M));if(hist.length>60)hist.shift()};
+
+function parse(t){
+  const top=[],ov=[],get=n=>ov[n]||(ov[n]={props:[],descs:[]});
+  for(const raw of t.split(/\r?\n/)){
+    const l=raw.trim();if(!l||l[0]==='#')continue;let m;
+    if(m=l.match(/^overlay(\d+)_desc(\d+)(?:_(\w+))?\s*=\s*(.*)$/)){
+      const o=get(+m[1]),d=o.descs[+m[2]]||(o.descs[+m[2]]={in:null,x:{}});
+      if(!m[3]){const p=uq(m[4]).split(',');d.in={n:p[0],x:+p[1],y:+p[2],s:p[3]||'radial',w:+p[4],h:+p[5]}}
+      else d.x[m[3]]=m[4];
+    }else if(m=l.match(/^overlay(\d+)_(\w+)\s*=\s*(.*)$/)){
+      if(m[2]!=='descs')get(+m[1]).props.push([m[2],m[3]]);
+    }else if(m=l.match(/^(\w+)\s*=\s*(.*)$/)){
+      if(m[1]!=='overlays')top.push([m[1],m[2]]);
+    }
+  }
+  return{top,overlays:ov.filter(Boolean).map(o=>({props:o.props,descs:o.descs.filter(d=>d&&d.in)}))};
+}
+function ser(){
+  let s='';M.top.forEach(([k,v])=>s+=k+' = '+v+'\n');
+  s+='overlays = '+M.overlays.length+'\n';
+  M.overlays.forEach((o,i)=>{
+    s+='\n';o.props.forEach(([k,v])=>s+=`overlay${i}_${k} = ${v}\n`);
+    s+=`\noverlay${i}_descs = ${o.descs.length}\n\n`;
+    o.descs.forEach((d,j)=>{const a=d.in;
+      s+=`overlay${i}_desc${j} = "${a.n},${f5(a.x)},${f5(a.y)},${a.s},${f5(a.w)},${f5(a.h)}"\n`;
+      for(const k in d.x)s+=`overlay${i}_desc${j}_${k} = ${d.x[k]}\n`;});
+  });
+  return s;
+}
+function dims(){
+  if(document.body.classList.contains('fs')){const r=$('svg').getBoundingClientRect();if(r.width>50&&r.height>50)return[r.width,r.height]}
+  return $('orient').value==='portrait'?[405,720]:[960,540];
+}
+const rmod=()=>parseFloat(gp(O(),'range_mod'))||1;
+const K=a=>a.s==='rect'?1:Math.SQRT1_2;
+
+function draw(){
+  fixSel();
+  const o=O(),[W,H]=dims(),rm=rmod(),svg=$('svg'),sc=$('showc').checked;$('empty').hidden=o.descs.length>0;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.style.aspectRatio=document.body.classList.contains('fs')?'auto':W+'/'+H;
+  let h=bg?`<image href="${bg}" width="${W}" height="${H}" preserveAspectRatio="none" opacity=".85"/>`:'',hd='';
+  if($('grd').checked)h+=gridSvg(W,H);
+  let lb='';
+  o.descs.forEach((d,i)=>{
+    const a=d.in,cx=a.x*W,cy=a.y*H,rw=a.w*W,rh=a.h*H,combo=a.n.includes('|'),on=sels.has(i);
+    if(cx<-20||cx>W+20||cy<-20||cy>H+20||(combo&&!sc&&!on))return;
+    const cl=combo?'c':isSS(a)?'s':isUI(a)?'m':'b',
+      shp=(w,hh,c)=>a.s==='rect'
+        ?`<rect x="${cx-w}" y="${cy-hh}" width="${w*2}" height="${hh*2}" rx="6" class="${c}"/>`
+        :`<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${hh}" class="${c}"/>`;
+    const im=combo?null:imgOf(d);
+    h+=`<g data-i="${i}" class="k ${cl}${on?' on':''}${im?' im':''}">${im?`<image href="${im}" x="${cx-rw/rm}" y="${cy-rh/rm}" width="${2*rw/rm}" height="${2*rh/rm}" preserveAspectRatio="none" opacity=".9" style="pointer-events:none"/>`:''}${(on||combo)?shp(rw,rh,'hit'):''}${combo?'':shp(rw/rm,rh/rm,'vis')+(im?'':`<text x="${cx}" y="${cy}">${esc(a.n)}</text>`)}</g>`;
+    if(on&&sels.size===1)lb=`<text x="${Math.min(W-60,Math.max(60,cx))}" y="${Math.max(12,cy-rh/rm-14)}" style="paint-order:stroke;stroke:#000;stroke-width:3px;font-size:11px">x ${(a.x*100).toFixed(1)}%  y ${(a.y*100).toFixed(1)}%</text>`;
+  });
+  if(sels.size&&D()){
+    const g=grp();
+    if(sels.size>1){const[x0,y0,x1,y1]=g.bb;
+      h+=`<rect x="${x0*W}" y="${y0*H}" width="${(x1-x0)*W}" height="${(y1-y0)*H}" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="6 4" style="pointer-events:none"/>`;
+      lb=`<text x="${Math.min(W-60,Math.max(60,(x0+x1)/2*W))}" y="${Math.max(12,y0*H-10)}" style="paint-order:stroke;stroke:#000;stroke-width:3px;font-size:11px">${sels.size} tasti selezionati</text>`;}
+    hd=`<circle class="hd" data-h="1" cx="${g.h[0]*W}" cy="${g.h[1]*H}" r="${document.body.classList.contains('fs')?15:11}"/>`;
+  }
+  svg.innerHTML=h+hd+lb;
+  $('list').innerHTML=o.descs.map((d,i)=>`<li data-i="${i}" class="${sels.has(i)?'on':''}"><span>${i}. ${esc(d.in.n)}</span><small>${(+d.in.x).toFixed(2)}, ${(+d.in.y).toFixed(2)}</small></li>`).join('');
+  fsBadge();
+}
+function sync(){
+  fixSel();$('bclr').hidden=!sels.size;
+  dirFill();
+  const d=sel>=0&&D();$('fd').hidden=!d;$('sc').hidden=!d;$('sc0').hidden=!!d;if(!d)return;const a=d.in;
+  simgFill();
+  if(sels.size>1){$('sname').textContent=sels.size+' tasti';$('mvhint').textContent='Sposta i '+sels.size+' tasti insieme';$('bfix').hidden=$('fixh').hidden=true;$('repd').hidden=true;$('fd').hidden=true;return}
+  $('repd').hidden=false;
+  $('sname').textContent=a.n+(isDp(a)?' (croce intera)':'');$('mvhint').textContent=isDp(a)?'Sposta tutta la croce direzionale':'Sposta solo questo tasto';$('bfix').hidden=$('fixh').hidden=!isDp(a);
+  repFill();
+  $('fn').value=a.n;$('fx').value=f5(a.x);$('fy').value=f5(a.y);$('fw').value=f5(a.w);$('fh').value=f5(a.h);
+  $('fs').value=a.s;$('fi').value=d.x.overlay||'';$('ft').value=uq(d.x.next_target||'');
+}
+function fillOv(){
+  if(cur>=M.overlays.length)cur=0;
+  const v=vis();if(!v.includes(cur))cur=v[0];
+  $('osel').innerHTML=v.map(i=>`<option value="${i}">${esc(uq(gp(M.overlays[i],'name'))||'overlay '+i)}</option>`).join('');
+  $('osel').value=cur;const o=O();
+  $('oname').value=uq(gp(o,'name'));$('orm').value=gp(o,'range_mod');$('oam').value=gp(o,'alpha_mod');
+  if(sel>=o.descs.length)sel=-1;sync();draw();
+}
+
+$('fcfg').onchange=e=>{const f=e.target.files[0];if(!f)return;fname=f.name;
+  f.text().then(t=>{M=parse(t);libDirty=true;if(!M.overlays.length)M=newModel();M.overlays.forEach(o=>o.base=geo(o));orig=JSON.parse(JSON.stringify(M));cur=0;sel=-1;hist=[];fillOv();askOrient()});e.target.value=''};
+$('fbg').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{bg=r.result;draw()};r.readAsDataURL(f);e.target.value=''};
+$('bsave').onclick=()=>leave(()=>{const a=document.createElement('a'),nm=(fname||'overlay').replace(/\.(txt|cfg)$/i,'').replace(/\.(txt|cfg)$/i,'')+'.cfg';
+  a.href=URL.createObjectURL(new Blob([ser()],{type:'application/octet-stream'}));a.download=nm;document.body.appendChild(a);a.click();
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},1500)});
+const kind=o=>{const n=uq(gp(o,'name'));return /portrait/i.test(n)?'portrait':/landscape/i.test(n)?'landscape':''};
+function vis(){
+  const all=M.overlays.map((o,i)=>i),big=all.filter(i=>M.overlays[i].descs.length>2||i===cur),
+    base=big.length?big:all,k=$('orient').value,m=base.filter(i=>{const x=kind(M.overlays[i]);return !x||x===k});
+  return m.length?m:base;
+}
+function askOrient(){$('dlg').returnValue='';$('dlg').showModal()}
+$('dlg').addEventListener('close',()=>{const v=$('dlg').returnValue;
+  if(v){$('orient').value=v;cur=vis()[0];sel=-1;fillOv()}});
+function undo(){if(!hist.length)return;M=JSON.parse(hist.pop());fillOv()}
+$('bundo').onclick=undo;$('bnobg').onclick=()=>{bg='';draw()};
+
+const EPS=1e-6,PARTNER={A:'B',B:'A',C:'D',D:'C'};
+const diffG=(b,a)=>Math.abs(a.x-b.x)>EPS||Math.abs(a.y-b.y)>EPS||Math.abs(a.w-b.w)>EPS||Math.abs(a.h-b.h)>EPS;
+const changed=o=>!!o.base&&(o.base.some(b=>{const d=o.descs.find(x=>x.id===b.id);return !d||diffG(b,d.in)})||o.descs.some(d=>!d.id));
+function partner(o){
+  const m=uq(gp(o,'name')).match(/^(.*-)([A-D])$/i);if(!m)return -1;
+  const pn=m[1]+PARTNER[m[2].toUpperCase()];
+  return M.overlays.findIndex(x=>uq(gp(x,'name'))===pn&&x.descs.length>2);
+}
+const keys=names=>{const c={};return names.map(n=>n+'#'+(c[n]=(c[n]||0)+1))};
+const DIRN=/^(up|down|left|right)$/,isDpN=n=>/^(left|right|up|down)(\|(left|right|up|down))?$/.test(n);
+function delta(src,pred){
+  let sx=0,sy=0,n=0,rw=1,rh=1,got=false;
+  src.base.forEach(b=>{const d=src.descs.find(x=>x.id===b.id),a=d&&d.in;if(!a||!pred(b.n))return;
+    if(!diffG(b,a))return;
+    n++;sx+=a.x-b.x;sy+=a.y-b.y;
+    if(!got&&b.w>0&&b.h>0&&(Math.abs(a.w-b.w)>EPS||Math.abs(a.h-b.h)>EPS)){rw=a.w/b.w;rh=a.h/b.h;got=true}});
+  if(!n)return null;const dx=sx/n,dy=sy/n;
+  return(Math.abs(dx)>EPS||Math.abs(dy)>EPS||got)?{dx,dy,rw,rh}:null;
+}
+function applyTo(src,dst,last=true){
+  const cur=new Map(src.descs.map(d=>[d.id,d.in])),sk=keys(src.base.map(b=>b.n)),dk=keys(dst.descs.map(d=>d.in.n)),map={},gone=new Set();
+  dk.forEach((k,i)=>map[k]=dst.descs[i]);
+  src.base.forEach((b,i)=>{const a=cur.get(b.id),t=map[sk[i]];if(!t)return;
+    if(!a){gone.add(t);return}
+    const q=t.in;q.x+=a.x-b.x;q.y+=a.y-b.y;if(b.w>0)q.w*=a.w/b.w;if(b.h>0)q.h*=a.h/b.h});
+  if(gone.size)dst.descs=dst.descs.filter(d=>!gone.has(d));
+  src.descs.filter(d=>!d.id).forEach(nd=>{
+    const nc=(arr,n)=>arr.filter(x=>x.in.n===n).length;
+    if(nc(dst.descs,nd.in.n)>=nc(src.descs,nd.in.n))return;
+    const c=JSON.parse(JSON.stringify(nd));delete c.id;dst.descs.push(c)});
+  /* d-pad <-> analog_left: they occupy the same place in the digital / analog variants */
+  const dn=dst.descs.map(d=>d.in.n),hasDp=dn.some(n=>DIRN.test(n)),hasAn=dn.includes('analog_left');
+  if(!hasDp&&hasAn){
+    const t=delta(src,n=>DIRN.test(n))||delta(src,n=>n==='dpad_area');
+    if(t)dst.descs.forEach(d=>{const a=d.in;if(a.n!=='analog_left')return;a.x+=t.dx;a.y+=t.dy;a.w*=t.rw;a.h*=t.rh});
+  }else if(hasDp&&!hasAn){
+    const t=delta(src,n=>n==='analog_left');
+    if(t){
+      const mem=dst.descs.map(d=>d.in).filter(a=>isDpN(a.n)||a.n==='dpad_area'),pc=mem.filter(a=>DIRN.test(a.n)),ref=pc.length?pc:mem;
+      const cx=ref.reduce((q,a)=>q+a.x,0)/ref.length,cy=ref.reduce((q,a)=>q+a.y,0)/ref.length;
+      mem.forEach(a=>{a.x=cx+t.dx+(a.x-cx)*t.rw;a.y=cy+t.dy+(a.y-cy)*t.rh;a.w*=t.rw;a.h*=t.rh});
+    }
+  }
+  dst.base=geo(dst);if(last)src.base=geo(src);
+}
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},Math.min(9000,2800+m.length*45))}
+function syncAll(){
+  const o=O(),k=kind(o);let n=0;
+  M.overlays.forEach((d,i)=>{if(i===cur||kind(d)!==k||d.descs.length<=2)return;applyTo(o,d,false);n++});
+  o.base=geo(o);return n;
+}
+let pend=null;
+function leave(then){
+  const o=O();
+  if($('syn').checked&&kind(o)){
+    if(changed(o)){snap();const k=kind(o),n=syncAll();if(n)toast('Modifiche applicate a '+n+(n===1?' altra versione ':' altre versioni ')+'('+(k==='portrait'?'verticale':'orizzontale')+')')}
+    then();return;
+  }
+  const j=partner(o);
+  if(j<0||!changed(o)){then();return}
+  $('sa').textContent=uq(gp(o,'name'));$('sb').textContent=uq(gp(M.overlays[j],'name'));
+  pend={then,i:cur,j};$('dsync').returnValue='';$('dsync').showModal();
+}
+$('dsync').addEventListener('close',()=>{
+  const p=pend;pend=null;if(!p)return;const v=$('dsync').returnValue;
+  if(v==='yes'){snap();applyTo(M.overlays[p.i],M.overlays[p.j])}
+  else if(v==='no')M.overlays[p.i].base=geo(M.overlays[p.i]);
+  p.then();
+});
+$('osel').onchange=e=>{const to=+e.target.value;leave(()=>{cur=to;sel=-1;fillOv()})};
+$('oadd').onclick=()=>{snap();M.overlays.push(newOv('overlay-'+(M.overlays.length+1)));cur=M.overlays.length-1;sel=-1;fillOv()};
+$('odup').onclick=()=>{snap();const c=JSON.parse(JSON.stringify(O()));sp(c,'name','"'+uq(gp(c,'name'))+'-copia"');c.base=geo(c);
+  M.overlays.push(c);cur=M.overlays.length-1;sel=-1;fillOv()};
+$('odel').onclick=()=>{if(M.overlays.length<2)return alert('Serve almeno un overlay.');
+  if(!confirm('Eliminare questo overlay?'))return;snap();M.overlays.splice(cur,1);cur=0;sel=-1;fillOv()};
+$('oname').onfocus=$('orm').onfocus=$('oam').onfocus=snap;
+$('oname').oninput=e=>{sp(O(),'name','"'+e.target.value+'"');[...$('osel').options].forEach(x=>{if(+x.value===cur)x.text=e.target.value});draw()};
+$('orm').oninput=e=>{sp(O(),'range_mod',e.target.value);draw()};
+$('oam').oninput=e=>{sp(O(),'alpha_mod',e.target.value);draw()};
+$('orient').onchange=()=>leave(()=>{cur=vis()[0];sel=-1;fillOv()});$('showc').onchange=draw;
+
+const isDp=a=>/^(left|right|up|down)(\|(left|right|up|down))?$/.test(a.n);
+function dpc(){
+  const ms=O().descs.filter(x=>isDp(x.in)),m4=ms.filter(x=>/^(left|right|up|down)$/.test(x.in.n)),src=m4.length?m4:ms;
+  return{ms,c:[src.reduce((t,x)=>t+x.in.x,0)/src.length,src.reduce((t,x)=>t+x.in.y,0)/src.length]};
+}
+function grp(){
+  const rm=rmod(),all=[...sels].map(i=>O().descs[i]).filter(Boolean);
+  if(all.length<=1){
+    const d=D(),a=d.in,h=[a.x+K(a)*a.w/rm,a.y+K(a)*a.h/rm];
+    if(!isDp(a))return{ms:[d],c:[a.x,a.y],h};
+    const g=dpc();g.h=h;return g;
+  }
+  const set=new Set();all.forEach(d=>{if(isDp(d.in))dpc().ms.forEach(x=>set.add(x));else set.add(d)});
+  const ms=[...set];let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  ms.forEach(d=>{const a=d.in;x0=Math.min(x0,a.x-a.w/rm);x1=Math.max(x1,a.x+a.w/rm);y0=Math.min(y0,a.y-a.h/rm);y1=Math.max(y1,a.y+a.h/rm)});
+  return{ms,c:[(x0+x1)/2,(y0+y1)/2],h:[x1,y1],bb:[x0,y0,x1,y1]};
+}
+const st=ms=>ms.map(d=>({...d.in}));
+const applyScale=(g,b,s)=>g.ms.forEach((d,i)=>{const a=d.in,o=b[i];
+  a.x=g.c[0]+(o.x-g.c[0])*s;a.y=g.c[1]+(o.y-g.c[1])*s;a.w=o.w*s;a.h=o.h*s});
+const scale=f=>{if(sel<0)return;snap();const g=grp();applyScale(g,st(g.ms),f);sync();draw()};
+function fixDpad(){
+  if(sel<0||sels.size!==1||!isDp(D().in))return;
+  const oo=orig&&orig.overlays.find(o=>gp(o,'name')===gp(O(),'name'));
+  if(!oo)return alert('Per riparare la croce serve aver aperto un file .cfg originale.');
+  const pr=[];O().descs.forEach((d,i)=>{const od=oo.descs[i];if(isDp(d.in)&&od&&od.in.n===d.in.n)pr.push([d.in,od.in])});
+  const m4=pr.filter(p=>/^(left|right|up|down)$/.test(p[0].n));
+  if(m4.length<4)return alert('Non riesco a ripristinare la croce: mancano dei pezzi.');
+  snap();
+  const mean=f=>m4.reduce((t,p)=>t+f(p),0)/4,
+    c=[mean(p=>p[0].x),mean(p=>p[0].y)],c0=[mean(p=>p[1].x),mean(p=>p[1].y)],s=mean(p=>(p[0].w/p[1].w+p[0].h/p[1].h)/2);
+  pr.forEach(([a,o])=>{a.x=c[0]+(o.x-c0[0])*s;a.y=c[1]+(o.y-c0[1])*s;a.w=o.w*s;a.h=o.h*s});
+  sync();draw();
+}
+$('bfix').onclick=fixDpad;
+$('bminus').onclick=()=>scale(.9);$('bplus').onclick=()=>scale(1.1);
+document.querySelectorAll('[data-sz]').forEach(x=>x.onclick=()=>scale(1+ +x.dataset.sz/100));
+$('dadd').onclick=()=>{snap();O().descs.push({in:{n:'a',x:.5,y:.5,s:'radial',w:.05,h:.09},x:{}});sel=O().descs.length-1;sync();draw()};
+$('ddup').onclick=()=>{if(sel<0)return;snap();const ns=[];
+  [...sels].sort((a,b)=>a-b).forEach(i=>{const c=JSON.parse(JSON.stringify(O().descs[i]));c.in.x+=.04;c.in.y+=.04;delete c.id;O().descs.push(c);ns.push(O().descs.length-1)});
+  sels=new Set(ns);sel=ns[ns.length-1];sync();draw()};
+$('ddel').onclick=()=>{if(sel<0)return;snap();[...sels].sort((a,b)=>b-a).forEach(i=>O().descs.splice(i,1));sels=new Set();sel=-1;sync();draw()};
+$('list').onclick=e=>{const li=e.target.closest('li');if(!li)return;const i=+li.dataset.i;
+  if(multi){if(sels.has(i)){sels.delete(i);if(sel===i)sel=lastSel()}else{sels.add(i);sel=i}}else sel=i;sync();draw()};
+document.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{
+  snap();const[dx,dy]=b.dataset.mv.split(',').map(Number);
+  O().descs.forEach(d=>{if(isGame(d.in)){d.in.x+=dx;d.in.y+=dy}});sync();draw();
+});
+
+document.querySelectorAll('[data-mvs]').forEach(b=>b.onclick=()=>{
+  if(sel<0)return;snap();const[dx,dy]=b.dataset.mvs.split(',').map(Number);grp().ms.forEach(d=>{d.in.x+=dx;d.in.y+=dy});sync();draw();
+});
+$('fd').addEventListener('focusin',snap);
+$('fd').addEventListener('input',e=>{
+  const d=D(),a=d.in,id=e.target.id,v=e.target.value,n=parseFloat(v);
+  if(id==='fn'){a.n=v;$('sname').textContent=v}
+  else if(id==='fs')a.s=v;
+  else if(id==='fi'){v?d.x.overlay=v:delete d.x.overlay}
+  else if(id==='ft'){v?d.x.next_target='"'+v+'"':delete d.x.next_target}
+  else if(!isNaN(n))a[{fx:'x',fy:'y',fw:'w',fh:'h'}[id]]=n;
+  draw();
+});
+
+const svg=$('svg'),norm=e=>{const r=svg.getBoundingClientRect();return[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
+svg.addEventListener('pointerdown',e=>{
+  const[nx,ny]=norm(e);
+  if(e.target.dataset.h&&sel>=0){
+    snap();const g=grp();
+    drag={m:'r',g,b:st(g.ms),h0:g.h};e.preventDefault();return;
+  }
+  const el=e.target.closest('[data-i]');
+  if(!el){if(!multi){sel=-1;sync();draw()}return}
+  const i=+el.dataset.i,was=sels.has(i);
+  if(multi){if(!was){sels.add(i);sel=i}}else{sels=new Set([i]);sel=i}
+  snap();const a=O().descs[i].in,g=grp();
+  drag={m:'m',g,b:st(g.ms),p:[a.x,a.y],o:[a.x-nx,a.y-ny],tap:multi&&was?i:-1,x0:e.clientX,y0:e.clientY,mv:false};sync();draw();e.preventDefault();
+});
+addEventListener('pointermove',e=>{
+  if(!drag)return;const[nx,ny]=norm(e),[W,H]=dims(),g=drag.g;
+  if(drag.m==='m'&&drag.tap>=0&&!drag.mv){if(Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)>6)drag.mv=true;else return}
+  if(drag.m==='m'){
+    const px=Math.min(1,Math.max(0,nx+drag.o[0])),py=Math.min(1,Math.max(0,ny+drag.o[1]));let dx=px-drag.p[0],dy=py-drag.p[1];
+    if($('snp').checked){const q=gstep();dx=Math.round((drag.p[0]+dx)/q)*q-drag.p[0];dy=Math.round((drag.p[1]+dy)/q)*q-drag.p[1]}
+    g.ms.forEach((d,i)=>{d.in.x=drag.b[i].x+dx;d.in.y=drag.b[i].y+dy});
+  }else{
+    const h=drag.h0,s=Math.min(6,Math.max(.2,Math.hypot((nx-g.c[0])*W,(ny-g.c[1])*H)/Math.hypot((h[0]-g.c[0])*W,(h[1]-g.c[1])*H)));
+    applyScale(g,drag.b,s);
+  }
+  sync();draw();
+});
+addEventListener('pointerup',()=>{
+  if(drag&&drag.m==='m'&&drag.tap>=0&&!drag.mv){const i=drag.tap;sels.delete(i);if(sel===i)sel=lastSel();drag=null;sync();draw();return}
+  drag=null});
+addEventListener('pointercancel',()=>drag=null);
+addEventListener('keydown',e=>{
+  if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();return}
+  if(sel<0)return;
+  const k={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!k)return;
+  e.preventDefault();const s=e.shiftKey?.02:.0025;grp().ms.forEach(d=>{d.in.x+=k[0]*s;d.in.y+=k[1]*s});sync();draw();
+});
+/* ---- Immagini dei tasti + anteprima finale ---- */
+let imgs={},imgNames={},gen={},touches=new Map(),pvFs=false,lib=[],libDirty=true,libCache=[],prefDir='',dirKey='';
+const bname=p=>uq(p).split(/[\\/]/).pop().toLowerCase();
+/* libreria immagini: ogni file ricorda la sua posizione relativa, così si distinguono i set (es. default / clear) */
+function libList(){
+  if(!libDirty&&libCache.length===lib.length)return libCache;
+  const known=new Set();(M&&M.overlays||[]).forEach(o=>o.descs.forEach(d=>{if(d.x.overlay)known.add(uq(d.x.overlay).toLowerCase())}));
+  let root=null;
+  outer:for(const e of lib){if(!e.rel.includes('/'))continue;const r=e.rel.toLowerCase();
+    for(const p of known){if(r===p){root='';break outer}if(r.endsWith('/'+p)){root=e.rel.slice(0,e.rel.length-p.length);break outer}}}
+  libCache=lib.map(e=>{let cp=null;
+    if(e.rel.includes('/'))cp=(root!==null&&e.rel.toLowerCase().startsWith(root.toLowerCase()))?e.rel.slice(root.length):e.rel.split('/').slice(1).join('/');
+    return{rel:e.rel,name:e.name,url:e.url,cp}});
+  libDirty=false;return libCache;
+}
+function libUrl(path){const p=uq(path).toLowerCase(),L=libList();for(let i=L.length-1;i>=0;i--){const c=L[i].cp;if(c&&c.toLowerCase()===p)return L[i].url}return null}
+const imgOf=d=>d.x.overlay?(libUrl(d.x.overlay)||imgs[bname(d.x.overlay)]||null):null;
+async function loadImgs(fl){
+  fl=[...fl].filter(f=>/\.(png|jpe?g|webp|gif|svg|bmp)$/i.test(f.name)||/^image\//.test(f.type));
+  const rels=new Set(fl.map(f=>f.webkitRelativePath||f.name));lib=lib.filter(e=>!rels.has(e.rel));
+  await Promise.all(fl.map(f=>new Promise(r=>{const rd=new FileReader();
+    rd.onload=()=>{const k=f.name.toLowerCase();imgs[k]=rd.result;imgNames[k]=f.name;lib.push({rel:f.webkitRelativePath||f.name,name:f.name,url:rd.result});r()};
+    rd.onerror=r;rd.readAsDataURL(f)})));
+  libDirty=true;dirKey='';$('nimg').textContent=lib.length?' ('+lib.length+')':'';
+  $('repimg').dataset.k='';$('simg').dataset.k='';
+  dirFill();if(sel>=0)simgFill();draw();pvDraw();
+  $('dirnote').textContent=fl.length?'Caricate '+fl.length+' immagini.':'Nessuna immagine trovata nei file scelti.';
+}
+$('fimg').onchange=e=>{const fl=[...e.target.files];e.target.value='';loadImgs(fl)};
+$('fdir').onchange=e=>{const fl=[...e.target.files];e.target.value='';loadImgs(fl)};
+const dirOf=p=>{const i=p.lastIndexOf('/');return i<0?'':p.slice(0,i)};
+function dirFill(){
+  const used={},inl={};
+  (M&&M.overlays||[]).forEach(o=>o.descs.forEach(d=>{if(d.x.overlay){const dr=dirOf(uq(d.x.overlay));used[dr]=(used[dr]||0)+1}}));
+  libList().forEach(e=>{if(e.cp){const dr=dirOf(e.cp);inl[dr]=(inl[dr]||0)+1}});
+  const key=JSON.stringify([used,inl,lib.length]);if(key===dirKey)return;dirKey=key;
+  const all=[...new Set([...Object.keys(used),...Object.keys(inl)])];
+  $('dirlist').innerHTML=all.map(x=>`<option value="${esc(x)}">`).join('');
+  const nm=k=>k||'(accanto al file)';
+  $('dirinfo').innerHTML='Cartelle usate nel file: '+(Object.keys(used).length?Object.entries(used).map(([k,v])=>'<b>'+esc(nm(k))+'</b> ('+v+')').join(', '):'nessuna')+'.'+(lib.length?'<br>Immagini caricate: '+(Object.keys(inl).length?Object.entries(inl).map(([k,v])=>'<b>'+esc(nm(k))+'</b> ('+v+')').join(', '):lib.length+' file senza cartella')+'.':'');
+}
+function applyDir(dir,sc){
+  dir=(dir||'').trim().replace(/^["']|["']$/g,'').replace(/\\/g,'/').replace(/\/+$/,'');
+  if(!dir)return'Scrivi o scegli una cartella.';
+  if(!M.overlays.length)return'Apri prima un file .cfg.';
+  let ds=[];
+  if(sc==='sel'){ds=[...sels].map(i=>O().descs[i]).filter(Boolean);if(!ds.length)return'Seleziona prima alcuni tasti, oppure scegli "Tutti i tasti".'}
+  else if(sc==='ver')ds=O().descs.slice();
+  else M.overlays.forEach(o=>o.descs.forEach(d=>ds.push(d)));
+  const C=libList(),inDir=new Set(C.filter(e=>e.cp&&dirOf(e.cp).toLowerCase()===dir.toLowerCase()).map(e=>e.name.toLowerCase()));
+  if(lib.length&&!inDir.size)return'La cartella "'+dir+'" non risulta tra le immagini caricate. Scegline una dall\'elenco o carica la cartella giusta.';
+  snap();let ok=0,miss=0,same=0,none=0;const mn=new Set();
+  ds.forEach(d=>{
+    if(!d.x.overlay){if(!/_area$/.test(d.in.n)&&!d.in.n.includes('|'))none++;return}
+    const p=uq(d.x.overlay),b=p.split('/').pop();
+    if(dirOf(p)===dir){same++;return}
+    if(inDir.size&&!inDir.has(b.toLowerCase())){miss++;mn.add(b);return}
+    d.x.overlay='"'+dir+'/'+b+'"';ok++;
+  });
+  if($('dirpref')&&$('dirpref').checked)prefDir=dir;
+  $('repimg').dataset.k='';$('simg').dataset.k='';dirKey='';
+  sync();draw();pvDraw();
+  return 'Cartella "'+dir+'" applicata a '+ok+' tasti'+(same?', '+same+' la usavano già':'')+(miss?'. '+miss+' senza lo stesso file in quella cartella (lasciati invariati: '+[...mn].slice(0,4).join(', ')+(mn.size>4?'…':'')+')':'')+(none?'. '+none+' senza immagine: saltati':'')+'.'+(lib.length?'':' Non ho potuto verificare che i file esistano: carica la cartella delle immagini per controllare.');
+}
+$('dirapply').onclick=()=>{$('dirnote').textContent=applyDir($('dirin').value,$('dirscope').value)};
+function simgFill(){
+  const sl=$('simg'),l=iconCands().map(c=>c.path),k=l.join('|');
+  if(sl.dataset.k!==k){sl.dataset.k=k;sl.innerHTML='<option value="__keep">(non cambiare)</option><option value="__none">Nessuna immagine</option>'+l.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}
+  const d=sels.size===1&&D(),cur=d&&d.x.overlay?uq(d.x.overlay):'';
+  sl.value=[...sl.options].some(o=>o.value===cur)?cur:'__keep';
+}
+$('simg').onchange=e=>{
+  const v=e.target.value;if(v==='__keep'||sel<0)return;snap();
+  [...sels].forEach(i=>{const d=O().descs[i];if(!d)return;if(v==='__none')delete d.x.overlay;else d.x.overlay='"'+v+'"'});
+  sync();draw();
+};
+const SH=(s,cx,cy,w,h,at)=>s==='rect'
+  ?`<rect x="${cx-w}" y="${cy-h}" width="${w*2}" height="${h*2}" rx="${Math.min(w,h)*.3}" ${at}/>`
+  :`<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${h}" ${at}/>`;
+const gstep=()=>+$('gst').value||.05;
+function gridSvg(W,H){
+  const s=gstep(),N=Math.round(1/s);let h='';
+  for(let n=1;n<N;n++){const k=n*s,mid=n*2===N,x=k*W,y=k*H,st=mid?'rgba(255,255,255,.45)':'rgba(255,255,255,.16)',sw=mid?1.5:1,pc=Math.round(k*1000)/10;
+    h+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="${st}" stroke-width="${sw}"/><line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${st}" stroke-width="${sw}"/>`
+      +`<text x="${x}" y="9" style="font-size:9px;opacity:.6">${pc}</text><text x="12" y="${y}" style="font-size:9px;opacity:.6">${pc}</text>`;}
+  return `<g style="pointer-events:none">${h}</g>`;
+}
+function pvHits(W,H){
+  const hit=new Set();
+  touches.forEach(p=>O().descs.forEach((d,i)=>{
+    const a=d.in;if(/_area$/.test(a.n))return;
+    const rw=a.w*W,rh=a.h*H;if(rw<=0||rh<=0)return;
+    const dx=Math.abs(p.x-a.x*W),dy=Math.abs(p.y-a.y*H);
+    if(a.s==='rect'?(dx<=rw&&dy<=rh):((dx/rw)**2+(dy/rh)**2<=1))hit.add(i);
+  }));
+  return hit;
+}
+function pvDraw(){
+  const pv=$('pv');if(pv.hidden)return;
+  const W=pv.clientWidth||innerWidth,H=pv.clientHeight||innerHeight,o=O(),rm=rmod(),op=$('pvop').value/100,hits=pvHits(W,H);
+  $('pvs').setAttribute('viewBox',`0 0 ${W} ${H}`);
+  let h=bg?`<image href="${bg}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
+    :`<defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3350"/><stop offset="1" stop-color="#10131f"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#pg)"/>`;
+  if($('pvg').checked)h+=gridSvg(W,H);
+  const oo=$('pvor').checked&&orig&&orig.overlays[cur]&&gp(orig.overlays[cur],'name')===gp(o,'name')?orig.overlays[cur]:null;
+  let gh='',bt='';
+  o.descs.forEach((d,i)=>{
+    const a=d.in;if(a.n.includes('|')||/_area$/.test(a.n))return;
+    const cx=a.x*W,cy=a.y*H,vw=a.w*W/rm,vh=a.h*H/rm,pr=hits.has(i),im=imgOf(d),
+      col=isSS(a)?'240,176,60':isUI(a)?'160,164,175':'45,212,191';
+    if(oo){const b=oo.descs[i]&&oo.descs[i].in;
+      if(b&&b.n===a.n&&(Math.abs(b.x-a.x)>EPS||Math.abs(b.y-a.y)>EPS||Math.abs(b.w-a.w)>EPS||Math.abs(b.h-a.h)>EPS))
+        gh+=SH(b.s,b.x*W,b.y*H,b.w*W/rm,b.h*H/rm,'fill="none" stroke="#f0b03c" stroke-width="2" stroke-dasharray="6 5"')+`<line x1="${b.x*W}" y1="${b.y*H}" x2="${cx}" y2="${cy}" stroke="#f0b03c" stroke-width="1.5" stroke-dasharray="3 4" opacity=".8"/>`;}
+    if(im)bt+=`<image href="${im}" x="${cx-vw}" y="${cy-vh}" width="${2*vw}" height="${2*vh}" preserveAspectRatio="none" opacity="${pr?1:op}"/>`;
+    else bt+=SH(a.s,cx,cy,vw,vh,`fill="rgba(${col},${pr?.95:.55})" fill-opacity="${pr?1:op/.7}" stroke="rgba(255,255,255,.85)" stroke-width="2"`)+`<text x="${cx}" y="${cy}" style="font-size:${Math.max(9,Math.min(13,vw*.45))}px;opacity:${Math.min(1,op+.25)}">${esc(a.n)}</text>`;
+    if(pr)bt+=SH(a.s,cx,cy,vw+3,vh+3,'fill="none" stroke="#fff" stroke-width="3"');
+  });
+  $('pvs').innerHTML=h+gh+bt;
+  const ok=(W>=H)===($('orient').value==='landscape'),m=$('pvmsg');m.hidden=ok;
+  if(!ok)m.textContent=$('orient').value==='landscape'?'Ruota il telefono in orizzontale per vedere questa versione':'Ruota il telefono in verticale per vedere questa versione';
+  const names=[...hits].map(i=>o.descs[i].in.n),pp=$('pvpr');pp.hidden=!names.length;pp.textContent=names.join(', ');
+}
+async function pvOpen(){
+  if(!O().descs.length)return alert('Apri prima un file .cfg.');
+  const pv=$('pv');pv.hidden=false;document.body.style.overflow='hidden';touches.clear();pvFs=false;
+  try{await pv.requestFullscreen({navigationUI:'hide'});pvFs=true}catch(e){}
+  try{await screen.orientation.lock($('orient').value)}catch(e){}
+  pvDraw();setTimeout(pvDraw,150);setTimeout(pvDraw,500);
+}
+function pvClose(){
+  const pv=$('pv');if(pv.hidden)return;
+  pv.hidden=true;document.body.style.overflow='';touches.clear();
+  const f=pvFs;pvFs=false;if(f&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+  try{screen.orientation.unlock()}catch(e){}
+}
+$('bprev').onclick=pvOpen;$('pvx').onclick=pvClose;$('pvop').oninput=$('pvor').onchange=$('pvg').onchange=pvDraw;$('grd').onchange=$('gst').onchange=()=>{draw();pvDraw()};
+$('pvt').onclick=()=>{const b=$('pvbar');b.classList.toggle('min');$('pvt').textContent=b.classList.contains('min')?'☰':'▾'};
+const pvs=$('pvs');
+pvs.addEventListener('pointerdown',e=>{e.preventDefault();try{pvs.setPointerCapture(e.pointerId)}catch(x){}const r=pvs.getBoundingClientRect();touches.set(e.pointerId,{x:e.clientX-r.left,y:e.clientY-r.top});pvDraw()});
+pvs.addEventListener('pointermove',e=>{if(!touches.has(e.pointerId))return;const r=pvs.getBoundingClientRect();touches.set(e.pointerId,{x:e.clientX-r.left,y:e.clientY-r.top});pvDraw()});
+['pointerup','pointercancel'].forEach(t=>pvs.addEventListener(t,e=>{touches.delete(e.pointerId);pvDraw()}));
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&pvFs)pvClose();else setTimeout(pvDraw,100)});
+addEventListener('resize',()=>setTimeout(pvDraw,100));
+addEventListener('orientationchange',()=>setTimeout(pvDraw,300));
+addEventListener('keydown',e=>{if(e.key==='Escape')pvClose()});
+
+/* ---- Aggiungi tasto ---- */
+function freeSpot(w,h){
+  const bx=O().descs.filter(d=>!/_area$/.test(d.in.n)&&!d.in.n.includes('|')).map(d=>d.in);
+  for(let r=0;r<=40;r++)for(let c=0;c<=40;c++){
+    const y=.12+((r%2?1:-1)*Math.ceil(r/2)*.0)+r*.02,x=.5+((c%2?1:-1)*Math.ceil(c/2)*.04);
+    if(x<w||x>1-w||y<h||y>1-h)continue;
+    if(!bx.some(b=>Math.abs(b.x-x)<b.w+w&&Math.abs(b.y-y)<b.h+h))return[x,y];
+  }
+  return[.5,.5];
+}
+$('addbtn').onclick=()=>{
+  const o=O();if(!o.descs.length)return alert('Apri prima un file .cfg.');
+  const n=$('addsel').value,[W,H]=dims();snap();
+  const twin=o.descs.find(d=>d.in.n===n);
+  let w=twin?twin.in.w:44/W,h=twin?twin.in.h:44/H,sh=twin?twin.in.s:'radial';
+  const r=pickIcon(n),[x,y]=freeSpot(w,h),d={in:{n,x,y,s:sh,w,h},x:{}};
+  if(r)d.x.overlay=r.path;
+  o.descs.push(d);sel=o.descs.length-1;sync();draw();genFill();
+  $('addnote').textContent=r?'Aggiunto "'+n+'" '+iconMsg(r,n)+'. Trascinalo dove vuoi.'
+    :'Aggiunto "'+n+'". Non ho trovato un\'icona adatta: il tasto funziona ma resta invisibile nel gioco finché non imposti Immagine in Avanzate.';
+  $('sc').scrollIntoView({block:'nearest'});
+};
+
+/* ---- Sostituisci tasto ---- */
+$('repsel').innerHTML=$('addsel').innerHTML;
+function repFill(){
+  const l=iconCands().map(c=>c.path),k=l.join('|'),r=$('repimg');if(r.dataset.k===k)return;
+  const v=r.value;r.dataset.k=k;
+  r.innerHTML='<option value="__auto">Automatica (cerca l\'icona giusta, altrimenti la crea)</option><option value="__gen">Crea una nuova icona (da scaricare)</option><option value="__keep">Mantieni la grafica attuale</option><option value="__none">Nessuna grafica</option>'+l.map(x=>`<option value="${esc(x)}">${esc(x.split('/').pop())}</option>`).join('');
+  r.value=[...r.options].some(o=>o.value===v)?v:'__auto';
+}
+$('repbtn').onclick=()=>{
+  if(sel<0||!D()||sels.size!==1)return;
+  const d=D(),old=d.in.n,nn=$('repsel').value;
+  if(old===nn){$('repnote').textContent='Questo tasto è già "'+nn+'": scegli una funzione diversa.';return}
+  snap();
+  const mode=$('repimg').value,targets=[d];let skipped=0;
+  if($('repscope').value==='all')M.overlays.forEach((o,i)=>{
+    if(i===cur)return;const m=o.descs.filter(x=>x.in.n===old);
+    if(m.length===1)targets.push(m[0]);else if(m.length>1)skipped++;
+  });
+  const auto=mode==='__auto'||mode==='__gen',r=auto?pickIcon(nn,mode==='__gen'):null;
+  targets.forEach(t=>{
+    t.in.n=nn;
+    if(nn!=='overlay_next')delete t.x.next_target;
+    if(mode==='__none')delete t.x.overlay;
+    else if(auto){if(r)t.x.overlay=r.path}
+    else if(mode!=='__keep')t.x.overlay='"'+mode+'"';
+  });
+  M.overlays.forEach(o=>{if(o.base)o.descs.forEach(d=>{const b=targets.includes(d)&&o.base.find(x=>x.id===d.id);if(b)b.n=d.in.n})});
+  sync();draw();genFill();
+  const gfx=auto?(r?iconMsg(r,nn):'ma non ho trovato né potuto creare un\'icona adatta: la grafica è rimasta quella del tasto precedente. Scegline un\'altra da "Grafica" se vuoi cambiarla'):mode==='__keep'?'mantenendo la grafica attuale':mode==='__none'?'senza grafica (invisibile nel gioco)':'con la grafica scelta';
+  $('repnote').textContent='"'+old+'" → "'+nn+'" in '+targets.length+(targets.length===1?' versione':' versioni')+', '+gfx+'.'+(skipped?' In '+skipped+' versioni ci sono più tasti "'+old+'": non li ho toccati.':'');
+};
+
+$('bmulti').onclick=()=>{multi=!multi;$('bmulti').classList.toggle('p',multi);$('bmulti').textContent=multi?'Selezione multipla: sì':'Selezione multipla';
+  if(!multi&&sel>=0)sels=new Set([sel]);sync();draw()};
+$('bclr').onclick=()=>{sel=-1;sels.clear();sync();draw()};
+
+/* ---- Icone automatiche per le funzioni ---- */
+const SYN={save_state:['save','salva'],load_state:['load','carica'],toggle_fast_forward:['fast','forward','ff'],hold_fast_forward:['fast','forward','ff'],
+  toggle_slowmotion:['slow'],hold_slowmotion:['slow'],rewind:['rewind'],pause_toggle:['pause'],frame_advance:['frame'],
+  state_slot_increase:['slot'],state_slot_decrease:['slot'],reset:['reset'],screenshot:['screenshot','shot','camera'],fps_toggle:['fps'],
+  menu_toggle:['menu'],overlay_next:['overlay','hide','next'],mute:['mute'],volume_up:['volume','vol'],volume_down:['volume','vol'],exit_emulator:['exit','quit']};
+const SUBT={state_slot_increase:['plus','inc','up'],state_slot_decrease:['minus','dec','down'],volume_up:['up','plus'],volume_down:['down','minus'],
+  hold_fast_forward:['hold'],toggle_fast_forward:['toggle'],hold_slowmotion:['hold'],toggle_slowmotion:['toggle']};
+const LBL={state_slot_increase:'SLOT+',state_slot_decrease:'SLOT−',toggle_slowmotion:'SLOW',hold_slowmotion:'SLOW',fps_toggle:'FPS',mute:'MUTE',
+  volume_up:'VOL+',volume_down:'VOL−',exit_emulator:'EXIT',frame_advance:'FRAME',overlay_next:'NEXT',reset:'RESET'};
+function iconDir(){
+  if(prefDir)return prefDir;
+  const cnt={};let hk=null;
+  M.overlays.forEach(o=>o.descs.forEach(d=>{if(!d.x.overlay)return;const p=uq(d.x.overlay),dr=dirOf(p);cnt[dr]=(cnt[dr]||0)+1;if(hk===null&&/hotkey|menu/i.test(p))hk=dr}));
+  if(hk!==null)return hk;const k=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];return k===undefined?'img':k;
+}
+function iconCands(){
+  const out=new Map(),dir=iconDir();
+  M.overlays.forEach(o=>o.descs.forEach(d=>{if(d.x.overlay){const p=uq(d.x.overlay);out.set(p,p.split('/').pop())}}));
+  libList().forEach(e=>{if(e.cp)out.set(e.cp,e.name)});
+  const have=new Set([...out.values()].map(b=>b.toLowerCase()));
+  Object.keys(imgNames).forEach(k=>{if(!have.has(k)){const nm=imgNames[k];out.set(dir?dir+'/'+nm:nm,nm)}});
+  Object.values(gen).forEach(g=>out.set(g.path,g.file));
+  return[...out].map(([path,base])=>({path,base}));
+}
+function matchIcon(fn,only){
+  const keys=SYN[fn]||[fn],sub=SUBT[fn]||[];let best=null,bs=0;
+  iconCands().forEach(c=>{
+    if(only&&dirOf(c.path)!==prefDir)return;
+    const b=c.base.toLowerCase();let sc=0;
+    keys.forEach(k=>{if(b.includes(k))sc=2});
+    if(sc<2)return;
+    sub.forEach(k=>{if(b.includes(k))sc++});
+    if(prefDir&&dirOf(c.path)===prefDir)sc+=1.5;
+    if(sc>bs||(sc===bs&&best&&c.base.length<best.base.length)){best=c;bs=sc}
+  });
+  return best;
+}
+function mkIcon(fn){
+  const S=128,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  g.strokeStyle=g.fillStyle='#fff';g.lineWidth=7;g.lineCap=g.lineJoin='round';
+  g.beginPath();g.arc(64,64,57,0,Math.PI*2);g.stroke();
+  const P=d=>g.stroke(new Path2D(d)),F=d=>g.fill(new Path2D(d));
+  if(fn==='save_state'||fn==='load_state'){
+    P('M34 78v14h60V78');
+    P(fn==='save_state'?'M64 34v40M46 58l18 18 18-18':'M64 76V36M46 52l18-18 18 18');
+  }else if(/fast_forward/.test(fn))F('M34 42L64 64L34 86ZM64 42L94 64L64 86Z');
+  else if(fn==='rewind')F('M94 42L64 64L94 86ZM64 42L34 64L64 86Z');
+  else if(fn==='pause_toggle'){g.fillRect(42,38,16,52);g.fillRect(70,38,16,52)}
+  else if(fn==='menu_toggle')P('M36 46h56M36 64h56M36 82h56');
+  else if(fn==='screenshot'){g.strokeRect(32,50,64,42);P('M50 50l6-10h16l6 10');g.beginPath();g.arc(64,71,12,0,Math.PI*2);g.stroke()}
+  else{
+    const t=LBL[fn]||fn.replace(/_/g,' ').toUpperCase().slice(0,6);
+    g.font='bold '+(t.length>4?24:30)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=1;g.fillText(t,64,66);
+  }
+  return c.toDataURL('image/png');
+}
+const GENOK=fn=>!!(SYN[fn]||LBL[fn]);
+function pickIcon(fn,forceGen){
+  if(!forceGen){
+    if(prefDir){const m0=matchIcon(fn,true);if(m0)return{how:'match',path:'"'+m0.path+'"',file:m0.base}}
+    for(const o of M.overlays){const t=o.descs.find(x=>x.in.n===fn&&x.x.overlay);if(t)return{how:'known',path:t.x.overlay}}
+    const m=matchIcon(fn);if(m)return{how:'match',path:'"'+m.path+'"',file:m.base};
+  }
+  if(!GENOK(fn))return null;
+  if(!gen[fn]){
+    const dir=iconDir(),file='hotkey_'+fn+'.png';
+    gen[fn]={file,url:mkIcon(fn),path:dir?dir+'/'+file:file};
+    imgs[file.toLowerCase()]=gen[fn].url;
+  }
+  return{how:'gen',path:'"'+gen[fn].path+'"',file:gen[fn].file,full:gen[fn].path};
+}
+function iconMsg(r,fn){
+  if(r.how==='known')return 'con la grafica già usata per "'+fn+'"';
+  if(r.how==='match')return 'con l\'icona trovata nel set ('+r.file+')';
+  return 'con una nuova icona creata da me ('+r.full+'): scaricala dalla scheda "Icone create" e copiala in quella cartella, altrimenti il tasto resta invisibile nel gioco';
+}
+function genFill(){
+  const ks=Object.keys(gen);$('gencard').hidden=!ks.length;if(!ks.length)return;
+  $('gentxt').innerHTML='Scarica questi file e copiali nelle cartelle indicate (accanto alle altre icone del tuo overlay), con questo nome. Finché non lo fai, i tasti che li usano restano invisibili nel gioco.<br>'+ks.map(k=>'<b>'+esc(gen[k].path)+'</b>').join('<br>');
+  $('genbtns').innerHTML=ks.map(k=>`<a class="btn sm" style="text-decoration:none" download="${esc(gen[k].file)}" href="${gen[k].url}">⬇ ${esc(gen[k].file)}</a>`).join('');
+}
+/* cambiando il nome (Input) in Avanzate l'icona segue la nuova funzione */
+let fnOld='';
+$('fn').addEventListener('focus',()=>{const d=D();fnOld=d?d.in.n:''});
+$('fn').addEventListener('change',()=>{
+  const d=D();if(!d)return;const nn=d.in.n;
+  if(nn===fnOld||!(SYN[nn]||LBL[nn]))return;
+  const r=pickIcon(nn);if(!r)return;
+  d.x.overlay=r.path;sync();draw();genFill();
+  toast(iconMsg(r,nn).replace(/^con /,'Icona: '));
+});
+
+/* ---- Modifica a schermo intero ---- */
+let fsApi=false,fsSheet='';
+const isFs=()=>document.body.classList.contains('fs');
+$('fsadd').innerHTML=$('fsrep').innerHTML=$('addsel').innerHTML;
+function fsVerFill(){const v=$('fsver'),o=$('osel');v.innerHTML=o.innerHTML;v.value=o.value}
+function fsBarSync(){
+  const on=(a,v)=>{const b=document.querySelector('#fsbar [data-a="'+a+'"]');if(b)b.classList.toggle('on',!!v)};
+  on('grid',$('grd').checked);on('snap',$('snp').checked);on('multi',multi);
+  const st=document.querySelector('#fsbar [data-a="step"]');if(st)st.innerHTML=$('gst').selectedOptions[0].textContent+'<small>Passo</small>';
+}
+function fsBadge(){
+  if(!isFs())return;
+  const n=sels.size;$('fsn').textContent=n===0?'Tocca un tasto':n===1&&D()?D().in.n:n+' tasti';
+  const W=$('svg').clientWidth,H=$('svg').clientHeight,ok=(W>=H)===($('orient').value==='landscape'),m=$('fsmsg');
+  m.hidden=ok;if(!ok)m.textContent=$('orient').value==='landscape'?'Ruota il telefono in orizzontale':'Ruota il telefono in verticale';
+}
+async function fsOpen(){
+  if(!M.overlays.length||!O().descs.length)return alert('Apri prima un file .cfg.');
+  document.body.classList.add('fs');fsApi=false;fsSheet='';$('fsheet').hidden=true;$('fsbar').classList.remove('min');
+  try{await $('dev').requestFullscreen({navigationUI:'hide'});fsApi=true}catch(e){}
+  try{await screen.orientation.lock($('orient').value)}catch(e){}
+  fsVerFill();fsBarSync();draw();setTimeout(draw,150);setTimeout(draw,500);
+}
+function fsClose(){
+  if(!isFs())return;
+  document.body.classList.remove('fs');$('fsheet').hidden=true;
+  const f=fsApi;fsApi=false;if(f&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+  try{screen.orientation.unlock()}catch(e){}
+  draw();setTimeout(draw,150);
+}
+function fsSheetShow(a){
+  if(a==='rep'&&sels.size!==1){toast('Per cambiare la funzione seleziona un solo tasto');return}
+  fsSheet=fsSheet===a?'':a;$('fsheet').hidden=!fsSheet;
+  ['add','rep','img'].forEach(k=>{$('fsh-'+k).hidden=fsSheet!==k});
+  if(fsSheet==='img'&&!$('fsdir').value)$('fsdir').value=$('dirin').value||prefDir;
+}
+function fsAct(a){
+  if(a==='exit')return fsClose();
+  if(a==='undo')undo();
+  else if(a==='grid'){$('grd').checked=!$('grd').checked;draw()}
+  else if(a==='step'){const g=$('gst');g.selectedIndex=(g.selectedIndex+1)%g.options.length;draw()}
+  else if(a==='snap')$('snp').checked=!$('snp').checked;
+  else if(a==='multi')$('bmulti').click();
+  else if(a==='dup'){if(sel>=0)$('ddup').click();else toast('Seleziona prima un tasto')}
+  else if(a==='del'){if(sel>=0)$('ddel').click();else toast('Seleziona prima un tasto')}
+  else if(a==='prev')pvOpen();
+  else if(a==='hide'){const b=$('fsbar');b.classList.toggle('min');document.querySelector('#fsbar [data-a="hide"]').innerHTML=b.classList.contains('min')?'☰':'▾<small>Nascondi</small>';$('fsheet').hidden=true;fsSheet=''}
+  else fsSheetShow(a);
+  fsBarSync();
+}
+document.querySelectorAll('#fsbar [data-a]').forEach(b=>b.onclick=()=>fsAct(b.dataset.a));
+$('bfull').onclick=fsOpen;
+$('fsaddgo').onclick=()=>{$('addsel').value=$('fsadd').value;$('addbtn').click();toast($('addnote').textContent)};
+$('fsrepgo').onclick=()=>{if(sels.size!==1){toast('Seleziona un solo tasto');return}$('repsel').value=$('fsrep').value;$('repbtn').click();toast($('repnote').textContent)};
+$('fsdirgo').onclick=()=>{$('dirin').value=$('fsdir').value;$('dirscope').value=$('fsscope').value;$('dirapply').click();toast($('dirnote').textContent)};
+$('fsver').onchange=e=>{$('osel').value=e.target.value;$('osel').dispatchEvent(new Event('change'));fsVerFill();draw();fsBarSync()};
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&fsApi&&isFs())fsClose();else if(isFs())setTimeout(draw,100)});
+addEventListener('resize',()=>{if(isFs())setTimeout(draw,100)});
+addEventListener('orientationchange',()=>{if(isFs())setTimeout(draw,300)});
+addEventListener('keydown',e=>{if(e.key==='Escape')fsClose()});
+
+
+fillOv();
+</script>
+</body>
+</html>
