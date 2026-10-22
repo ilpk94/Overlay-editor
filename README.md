@@ -1,2 +1,2 @@
 # Overlay-editor
-An easy editor for retroarch overlays
+An easy editor for retroarch overlays, made with Claude
