@@ -113,6 +113,7 @@ body.fs #fsmsg:not([hidden]){display:block;position:absolute;left:50%;top:calc(5
 <header>
   <div class="brand"><div class="logo"><svg class="i big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h4M8 10v4"/><circle cx="15" cy="11" r=".6"/><circle cx="17.5" cy="13" r=".6"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg></div><div><b>Editor overlay</b><span>per RetroArch</span></div></div>
   <div class="acts">
+    <select id="lsel" class="btn" aria-label="Lingua / Language"><option value="it">Italiano</option><option value="en">English</option></select>
     <label class="btn fbtn"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Apri .cfg<input type="file" id="fcfg" accept=".cfg,.txt"></label>
     <label class="btn fbtn"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 8"/></svg>Sfondo<input type="file" id="fbg" accept="image/*"></label>
     <button id="bundo" class="btn"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Annulla</button>
@@ -250,6 +251,16 @@ body.fs #fsmsg:not([hidden]){display:block;position:absolute;left:50%;top:calc(5
   <div id="pvmsg" hidden></div><div id="pvpr" hidden></div>
   <div id="pvbar"><button class="btn" id="pvx">✕ Esci</button><label>Opacità<input type="range" id="pvop" min="20" max="100" value="70"></label><label><input type="checkbox" id="pvor">Originale</label><label><input type="checkbox" id="pvg">Griglia</label><button class="btn" id="pvt" aria-label="Riduci barra">▾</button></div>
 </div>
+<dialog id="dlang">
+  <form method="dialog">
+    <h2>Lingua / Language</h2>
+    <p class="hint">Scegli la lingua dell'editor.<br>Choose the editor language.</p>
+    <div class="choices stack">
+      <button value="it">Italiano</button>
+      <button value="en">English</button>
+    </div>
+  </form>
+</dialog>
 <dialog id="dlg">
   <form method="dialog">
     <h2>Quale versione vuoi modificare?</h2>
@@ -271,6 +282,7 @@ body.fs #fsmsg:not([hidden]){display:block;position:absolute;left:50%;top:calc(5
   </form>
 </dialog>
 <script>
+let LANG='it';const tr=(a,b)=>LANG==='en'?b:a;
 const $=id=>document.getElementById(id),f5=v=>(+v).toFixed(5),uq=s=>String(s).replace(/^"|"$/g,''),
 esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const newOv=n=>({props:[['full_screen','true'],['normalized','true'],['name','"'+n+'"'],['range_mod','1.5'],['alpha_mod','2.0']],descs:[],base:[]});
@@ -348,7 +360,7 @@ function draw(){
     const g=grp();
     if(sels.size>1){const[x0,y0,x1,y1]=g.bb;
       h+=`<rect x="${x0*W}" y="${y0*H}" width="${(x1-x0)*W}" height="${(y1-y0)*H}" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="6 4" style="pointer-events:none"/>`;
-      lb=`<text x="${Math.min(W-60,Math.max(60,(x0+x1)/2*W))}" y="${Math.max(12,y0*H-10)}" style="paint-order:stroke;stroke:#000;stroke-width:3px;font-size:11px">${sels.size} tasti selezionati</text>`;}
+      lb=`<text x="${Math.min(W-60,Math.max(60,(x0+x1)/2*W))}" y="${Math.max(12,y0*H-10)}" style="paint-order:stroke;stroke:#000;stroke-width:3px;font-size:11px">${sels.size} ${tr('tasti selezionati','buttons selected')}</text>`;}
     hd=`<circle class="hd" data-h="1" cx="${g.h[0]*W}" cy="${g.h[1]*H}" r="${document.body.classList.contains('fs')?15:11}"/>`;
   }
   svg.innerHTML=h+hd+lb;
@@ -360,9 +372,9 @@ function sync(){
   dirFill();
   const d=sel>=0&&D();$('fd').hidden=!d;$('sc').hidden=!d;$('sc0').hidden=!!d;if(!d)return;const a=d.in;
   simgFill();
-  if(sels.size>1){$('sname').textContent=sels.size+' tasti';$('mvhint').textContent='Sposta i '+sels.size+' tasti insieme';$('bfix').hidden=$('fixh').hidden=true;$('repd').hidden=true;$('fd').hidden=true;return}
+  if(sels.size>1){$('sname').textContent=sels.size+tr(' tasti',' buttons');$('mvhint').textContent=tr('Sposta i '+sels.size+' tasti insieme','Move the '+sels.size+' buttons together');$('bfix').hidden=$('fixh').hidden=true;$('repd').hidden=true;$('fd').hidden=true;return}
   $('repd').hidden=false;
-  $('sname').textContent=a.n+(isDp(a)?' (croce intera)':'');$('mvhint').textContent=isDp(a)?'Sposta tutta la croce direzionale':'Sposta solo questo tasto';$('bfix').hidden=$('fixh').hidden=!isDp(a);
+  $('sname').textContent=a.n+(isDp(a)?tr(' (croce intera)',' (whole d-pad)'):'');$('mvhint').textContent=isDp(a)?tr('Sposta tutta la croce direzionale','Move the whole d-pad'):tr('Sposta solo questo tasto','Move only this button');$('bfix').hidden=$('fixh').hidden=!isDp(a);
   repFill();
   $('fn').value=a.n;$('fx').value=f5(a.x);$('fy').value=f5(a.y);$('fw').value=f5(a.w);$('fh').value=f5(a.h);
   $('fs').value=a.s;$('fi').value=d.x.overlay||'';$('ft').value=uq(d.x.next_target||'');
@@ -450,7 +462,7 @@ let pend=null;
 function leave(then){
   const o=O();
   if($('syn').checked&&kind(o)){
-    if(changed(o)){snap();const k=kind(o),n=syncAll();if(n)toast('Modifiche applicate a '+n+(n===1?' altra versione ':' altre versioni ')+'('+(k==='portrait'?'verticale':'orizzontale')+')')}
+    if(changed(o)){snap();const k=kind(o),n=syncAll();if(n)toast(tr('Modifiche applicate a '+n+(n===1?' altra versione ':' altre versioni ')+'('+(k==='portrait'?'verticale':'orizzontale')+')','Changes applied to '+n+(n===1?' other version ':' other versions ')+'('+(k==='portrait'?'portrait':'landscape')+')'))}
     then();return;
   }
   const j=partner(o);
@@ -466,10 +478,10 @@ $('dsync').addEventListener('close',()=>{
 });
 $('osel').onchange=e=>{const to=+e.target.value;leave(()=>{cur=to;sel=-1;fillOv()})};
 $('oadd').onclick=()=>{snap();M.overlays.push(newOv('overlay-'+(M.overlays.length+1)));cur=M.overlays.length-1;sel=-1;fillOv()};
-$('odup').onclick=()=>{snap();const c=JSON.parse(JSON.stringify(O()));sp(c,'name','"'+uq(gp(c,'name'))+'-copia"');c.base=geo(c);
+$('odup').onclick=()=>{snap();const c=JSON.parse(JSON.stringify(O()));sp(c,'name','"'+uq(gp(c,'name'))+tr('-copia','-copy')+'"');c.base=geo(c);
   M.overlays.push(c);cur=M.overlays.length-1;sel=-1;fillOv()};
-$('odel').onclick=()=>{if(M.overlays.length<2)return alert('Serve almeno un overlay.');
-  if(!confirm('Eliminare questo overlay?'))return;snap();M.overlays.splice(cur,1);cur=0;sel=-1;fillOv()};
+$('odel').onclick=()=>{if(M.overlays.length<2)return alert(tr('Serve almeno un overlay.','At least one overlay is required.'));
+  if(!confirm(tr('Eliminare questo overlay?','Delete this overlay?')))return;snap();M.overlays.splice(cur,1);cur=0;sel=-1;fillOv()};
 $('oname').onfocus=$('orm').onfocus=$('oam').onfocus=snap;
 $('oname').oninput=e=>{sp(O(),'name','"'+e.target.value+'"');[...$('osel').options].forEach(x=>{if(+x.value===cur)x.text=e.target.value});draw()};
 $('orm').oninput=e=>{sp(O(),'range_mod',e.target.value);draw()};
@@ -500,10 +512,10 @@ const scale=f=>{if(sel<0)return;snap();const g=grp();applyScale(g,st(g.ms),f);sy
 function fixDpad(){
   if(sel<0||sels.size!==1||!isDp(D().in))return;
   const oo=orig&&orig.overlays.find(o=>gp(o,'name')===gp(O(),'name'));
-  if(!oo)return alert('Per riparare la croce serve aver aperto un file .cfg originale.');
+  if(!oo)return alert(tr('Per riparare la croce serve aver aperto un file .cfg originale.','To repair the d-pad you need to have opened an original .cfg file.'));
   const pr=[];O().descs.forEach((d,i)=>{const od=oo.descs[i];if(isDp(d.in)&&od&&od.in.n===d.in.n)pr.push([d.in,od.in])});
   const m4=pr.filter(p=>/^(left|right|up|down)$/.test(p[0].n));
-  if(m4.length<4)return alert('Non riesco a ripristinare la croce: mancano dei pezzi.');
+  if(m4.length<4)return alert(tr('Non riesco a ripristinare la croce: mancano dei pezzi.','I cannot restore the d-pad: some pieces are missing.'));
   snap();
   const mean=f=>m4.reduce((t,p)=>t+f(p),0)/4,
     c=[mean(p=>p[0].x),mean(p=>p[0].y)],c0=[mean(p=>p[1].x),mean(p=>p[1].y)],s=mean(p=>(p[0].w/p[1].w+p[0].h/p[1].h)/2);
@@ -603,7 +615,7 @@ async function loadImgs(fl){
   libDirty=true;dirKey='';$('nimg').textContent=lib.length?' ('+lib.length+')':'';
   $('repimg').dataset.k='';$('simg').dataset.k='';
   dirFill();if(sel>=0)simgFill();draw();pvDraw();
-  $('dirnote').textContent=fl.length?'Caricate '+fl.length+' immagini.':'Nessuna immagine trovata nei file scelti.';
+  $('dirnote').textContent=fl.length?tr('Caricate '+fl.length+' immagini.','Loaded '+fl.length+' images.'):tr('Nessuna immagine trovata nei file scelti.','No images found in the chosen files.');
 }
 $('fimg').onchange=e=>{const fl=[...e.target.files];e.target.value='';loadImgs(fl)};
 $('fdir').onchange=e=>{const fl=[...e.target.files];e.target.value='';loadImgs(fl)};
@@ -615,19 +627,19 @@ function dirFill(){
   const key=JSON.stringify([used,inl,lib.length]);if(key===dirKey)return;dirKey=key;
   const all=[...new Set([...Object.keys(used),...Object.keys(inl)])];
   $('dirlist').innerHTML=all.map(x=>`<option value="${esc(x)}">`).join('');
-  const nm=k=>k||'(accanto al file)';
-  $('dirinfo').innerHTML='Cartelle usate nel file: '+(Object.keys(used).length?Object.entries(used).map(([k,v])=>'<b>'+esc(nm(k))+'</b> ('+v+')').join(', '):'nessuna')+'.'+(lib.length?'<br>Immagini caricate: '+(Object.keys(inl).length?Object.entries(inl).map(([k,v])=>'<b>'+esc(nm(k))+'</b> ('+v+')').join(', '):lib.length+' file senza cartella')+'.':'');
+  const nm=k=>k||tr('(accanto al file)','(next to the file)');
+  $('dirinfo').innerHTML=tr('Cartelle usate nel file: ','Folders used in the file: ')+(Object.keys(used).length?Object.entries(used).map(([k,v])=>'<b>'+esc(nm(k))+'</b> ('+v+')').join(', '):tr('nessuna','none'))+'.'+(lib.length?tr('<br>Immagini caricate: ','<br>Loaded images: ')+(Object.keys(inl).length?Object.entries(inl).map(([k,v])=>'<b>'+esc(nm(k))+'</b> ('+v+')').join(', '):lib.length+tr(' file senza cartella',' files without a folder'))+'.':'');
 }
 function applyDir(dir,sc){
   dir=(dir||'').trim().replace(/^["']|["']$/g,'').replace(/\\/g,'/').replace(/\/+$/,'');
-  if(!dir)return'Scrivi o scegli una cartella.';
-  if(!M.overlays.length)return'Apri prima un file .cfg.';
+  if(!dir)return tr('Scrivi o scegli una cartella.','Type or choose a folder.');
+  if(!M.overlays.length)return tr('Apri prima un file .cfg.','Open a .cfg file first.');
   let ds=[];
-  if(sc==='sel'){ds=[...sels].map(i=>O().descs[i]).filter(Boolean);if(!ds.length)return'Seleziona prima alcuni tasti, oppure scegli "Tutti i tasti".'}
+  if(sc==='sel'){ds=[...sels].map(i=>O().descs[i]).filter(Boolean);if(!ds.length)return tr('Seleziona prima alcuni tasti, oppure scegli "Tutti i tasti".','Select some buttons first, or choose "All buttons".')}
   else if(sc==='ver')ds=O().descs.slice();
   else M.overlays.forEach(o=>o.descs.forEach(d=>ds.push(d)));
   const C=libList(),inDir=new Set(C.filter(e=>e.cp&&dirOf(e.cp).toLowerCase()===dir.toLowerCase()).map(e=>e.name.toLowerCase()));
-  if(lib.length&&!inDir.size)return'La cartella "'+dir+'" non risulta tra le immagini caricate. Scegline una dall\'elenco o carica la cartella giusta.';
+  if(lib.length&&!inDir.size)return tr('La cartella "'+dir+'" non risulta tra le immagini caricate. Scegline una dall\'elenco o carica la cartella giusta.','The folder "'+dir+'" is not among the loaded images. Pick one from the list or load the right folder.');
   snap();let ok=0,miss=0,same=0,none=0;const mn=new Set();
   ds.forEach(d=>{
     if(!d.x.overlay){if(!/_area$/.test(d.in.n)&&!d.in.n.includes('|'))none++;return}
@@ -639,12 +651,12 @@ function applyDir(dir,sc){
   if($('dirpref')&&$('dirpref').checked)prefDir=dir;
   $('repimg').dataset.k='';$('simg').dataset.k='';dirKey='';
   sync();draw();pvDraw();
-  return 'Cartella "'+dir+'" applicata a '+ok+' tasti'+(same?', '+same+' la usavano già':'')+(miss?'. '+miss+' senza lo stesso file in quella cartella (lasciati invariati: '+[...mn].slice(0,4).join(', ')+(mn.size>4?'…':'')+')':'')+(none?'. '+none+' senza immagine: saltati':'')+'.'+(lib.length?'':' Non ho potuto verificare che i file esistano: carica la cartella delle immagini per controllare.');
+  return tr('Cartella "'+dir+'" applicata a '+ok+' tasti','Folder "'+dir+'" applied to '+ok+' buttons')+(same?', '+same+tr(' la usavano già',' already used it'):'')+(miss?'. '+miss+tr(' senza lo stesso file in quella cartella (lasciati invariati: ',' without the same file in that folder (left unchanged: ')+[...mn].slice(0,4).join(', ')+(mn.size>4?'…':'')+')':'')+(none?'. '+none+tr(' senza immagine: saltati',' without an image: skipped'):'')+'.'+(lib.length?'':tr(' Non ho potuto verificare che i file esistano: carica la cartella delle immagini per controllare.',' I could not verify that the files exist: load the images folder to check.'));
 }
 $('dirapply').onclick=()=>{$('dirnote').textContent=applyDir($('dirin').value,$('dirscope').value)};
 function simgFill(){
   const sl=$('simg'),l=iconCands().map(c=>c.path),k=l.join('|');
-  if(sl.dataset.k!==k){sl.dataset.k=k;sl.innerHTML='<option value="__keep">(non cambiare)</option><option value="__none">Nessuna immagine</option>'+l.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}
+  if(sl.dataset.k!==k){sl.dataset.k=k;sl.innerHTML='<option value="__keep">'+tr('(non cambiare)','(do not change)')+'</option><option value="__none">'+tr('Nessuna immagine','No image')+'</option>'+l.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}
   const d=sels.size===1&&D(),cur=d&&d.x.overlay?uq(d.x.overlay):'';
   sl.value=[...sl.options].some(o=>o.value===cur)?cur:'__keep';
 }
@@ -696,11 +708,11 @@ function pvDraw(){
   });
   $('pvs').innerHTML=h+gh+bt;
   const ok=(W>=H)===($('orient').value==='landscape'),m=$('pvmsg');m.hidden=ok;
-  if(!ok)m.textContent=$('orient').value==='landscape'?'Ruota il telefono in orizzontale per vedere questa versione':'Ruota il telefono in verticale per vedere questa versione';
+  if(!ok)m.textContent=$('orient').value==='landscape'?tr('Ruota il telefono in orizzontale per vedere questa versione','Rotate your phone to landscape to see this version'):tr('Ruota il telefono in verticale per vedere questa versione','Rotate your phone to portrait to see this version');
   const names=[...hits].map(i=>o.descs[i].in.n),pp=$('pvpr');pp.hidden=!names.length;pp.textContent=names.join(', ');
 }
 async function pvOpen(){
-  if(!O().descs.length)return alert('Apri prima un file .cfg.');
+  if(!O().descs.length)return alert(tr('Apri prima un file .cfg.','Open a .cfg file first.'));
   const pv=$('pv');pv.hidden=false;document.body.style.overflow='hidden';touches.clear();pvFs=false;
   try{await pv.requestFullscreen({navigationUI:'hide'});pvFs=true}catch(e){}
   try{await screen.orientation.lock($('orient').value)}catch(e){}
@@ -734,15 +746,15 @@ function freeSpot(w,h){
   return[.5,.5];
 }
 $('addbtn').onclick=()=>{
-  const o=O();if(!o.descs.length)return alert('Apri prima un file .cfg.');
+  const o=O();if(!o.descs.length)return alert(tr('Apri prima un file .cfg.','Open a .cfg file first.'));
   const n=$('addsel').value,[W,H]=dims();snap();
   const twin=o.descs.find(d=>d.in.n===n);
   let w=twin?twin.in.w:44/W,h=twin?twin.in.h:44/H,sh=twin?twin.in.s:'radial';
   const r=pickIcon(n),[x,y]=freeSpot(w,h),d={in:{n,x,y,s:sh,w,h},x:{}};
   if(r)d.x.overlay=r.path;
   o.descs.push(d);sel=o.descs.length-1;sync();draw();genFill();
-  $('addnote').textContent=r?'Aggiunto "'+n+'" '+iconMsg(r,n)+'. Trascinalo dove vuoi.'
-    :'Aggiunto "'+n+'". Non ho trovato un\'icona adatta: il tasto funziona ma resta invisibile nel gioco finché non imposti Immagine in Avanzate.';
+  $('addnote').textContent=r?tr('Aggiunto "'+n+'" '+iconMsg(r,n)+'. Trascinalo dove vuoi.','Added "'+n+'" '+iconMsg(r,n)+'. Drag it wherever you like.')
+    :tr('Aggiunto "'+n+'". Non ho trovato un\'icona adatta: il tasto funziona ma resta invisibile nel gioco finché non imposti Immagine in Avanzate.','Added "'+n+'". I could not find a suitable icon: the button works but stays invisible in the game until you set Image in Advanced.');
   $('sc').scrollIntoView({block:'nearest'});
 };
 
@@ -751,13 +763,13 @@ $('repsel').innerHTML=$('addsel').innerHTML;
 function repFill(){
   const l=iconCands().map(c=>c.path),k=l.join('|'),r=$('repimg');if(r.dataset.k===k)return;
   const v=r.value;r.dataset.k=k;
-  r.innerHTML='<option value="__auto">Automatica (cerca l\'icona giusta, altrimenti la crea)</option><option value="__gen">Crea una nuova icona (da scaricare)</option><option value="__keep">Mantieni la grafica attuale</option><option value="__none">Nessuna grafica</option>'+l.map(x=>`<option value="${esc(x)}">${esc(x.split('/').pop())}</option>`).join('');
+  r.innerHTML='<option value="__auto">'+tr('Automatica (cerca l\'icona giusta, altrimenti la crea)','Automatic (find the right icon, otherwise create it)')+'</option><option value="__gen">'+tr('Crea una nuova icona (da scaricare)','Create a new icon (to download)')+'</option><option value="__keep">'+tr('Mantieni la grafica attuale','Keep the current graphic')+'</option><option value="__none">'+tr('Nessuna grafica','No graphic')+'</option>'+l.map(x=>`<option value="${esc(x)}">${esc(x.split('/').pop())}</option>`).join('');
   r.value=[...r.options].some(o=>o.value===v)?v:'__auto';
 }
 $('repbtn').onclick=()=>{
   if(sel<0||!D()||sels.size!==1)return;
   const d=D(),old=d.in.n,nn=$('repsel').value;
-  if(old===nn){$('repnote').textContent='Questo tasto è già "'+nn+'": scegli una funzione diversa.';return}
+  if(old===nn){$('repnote').textContent=tr('Questo tasto è già "'+nn+'": scegli una funzione diversa.','This button is already "'+nn+'": choose a different function.');return}
   snap();
   const mode=$('repimg').value,targets=[d];let skipped=0;
   if($('repscope').value==='all')M.overlays.forEach((o,i)=>{
@@ -774,11 +786,11 @@ $('repbtn').onclick=()=>{
   });
   M.overlays.forEach(o=>{if(o.base)o.descs.forEach(d=>{const b=targets.includes(d)&&o.base.find(x=>x.id===d.id);if(b)b.n=d.in.n})});
   sync();draw();genFill();
-  const gfx=auto?(r?iconMsg(r,nn):'ma non ho trovato né potuto creare un\'icona adatta: la grafica è rimasta quella del tasto precedente. Scegline un\'altra da "Grafica" se vuoi cambiarla'):mode==='__keep'?'mantenendo la grafica attuale':mode==='__none'?'senza grafica (invisibile nel gioco)':'con la grafica scelta';
-  $('repnote').textContent='"'+old+'" → "'+nn+'" in '+targets.length+(targets.length===1?' versione':' versioni')+', '+gfx+'.'+(skipped?' In '+skipped+' versioni ci sono più tasti "'+old+'": non li ho toccati.':'');
+  const gfx=auto?(r?iconMsg(r,nn):tr('ma non ho trovato né potuto creare un\'icona adatta: la grafica è rimasta quella del tasto precedente. Scegline un\'altra da "Grafica" se vuoi cambiarla','but I could not find or create a suitable icon: the graphic stayed that of the previous button. Pick another one from "Graphic" if you want to change it')):mode==='__keep'?tr('mantenendo la grafica attuale','keeping the current graphic'):mode==='__none'?tr('senza grafica (invisibile nel gioco)','without a graphic (invisible in the game)'):tr('con la grafica scelta','with the chosen graphic');
+  $('repnote').textContent='"'+old+'" → "'+nn+'" in '+targets.length+(targets.length===1?tr(' versione',' version'):tr(' versioni',' versions'))+', '+gfx+'.'+(skipped?tr(' In '+skipped+' versioni ci sono più tasti "'+old+'": non li ho toccati.',' In '+skipped+' versions there are several "'+old+'" buttons: I left them untouched.'):'');
 };
 
-$('bmulti').onclick=()=>{multi=!multi;$('bmulti').classList.toggle('p',multi);$('bmulti').textContent=multi?'Selezione multipla: sì':'Selezione multipla';
+$('bmulti').onclick=()=>{multi=!multi;$('bmulti').classList.toggle('p',multi);$('bmulti').textContent=multi?tr('Selezione multipla: sì','Multi-select: on'):tr('Selezione multipla','Multi-select');
   if(!multi&&sel>=0)sels=new Set([sel]);sync();draw()};
 $('bclr').onclick=()=>{sel=-1;sels.clear();sync();draw()};
 
@@ -854,13 +866,13 @@ function pickIcon(fn,forceGen){
   return{how:'gen',path:'"'+gen[fn].path+'"',file:gen[fn].file,full:gen[fn].path};
 }
 function iconMsg(r,fn){
-  if(r.how==='known')return 'con la grafica già usata per "'+fn+'"';
-  if(r.how==='match')return 'con l\'icona trovata nel set ('+r.file+')';
-  return 'con una nuova icona creata da me ('+r.full+'): scaricala dalla scheda "Icone create" e copiala in quella cartella, altrimenti il tasto resta invisibile nel gioco';
+  if(r.how==='known')return tr('con la grafica già usata per "'+fn+'"','with the graphic already used for "'+fn+'"');
+  if(r.how==='match')return tr('con l\'icona trovata nel set ('+r.file+')','with the icon found in the set ('+r.file+')');
+  return tr('con una nuova icona creata da me ('+r.full+'): scaricala dalla scheda "Icone create" e copiala in quella cartella, altrimenti il tasto resta invisibile nel gioco','with a new icon I created ('+r.full+'): download it from the "Created icons" card and copy it into that folder, otherwise the button stays invisible in the game');
 }
 function genFill(){
   const ks=Object.keys(gen);$('gencard').hidden=!ks.length;if(!ks.length)return;
-  $('gentxt').innerHTML='Scarica questi file e copiali nelle cartelle indicate (accanto alle altre icone del tuo overlay), con questo nome. Finché non lo fai, i tasti che li usano restano invisibili nel gioco.<br>'+ks.map(k=>'<b>'+esc(gen[k].path)+'</b>').join('<br>');
+  $('gentxt').innerHTML=tr('Scarica questi file e copiali nelle cartelle indicate (accanto alle altre icone del tuo overlay), con questo nome. Finché non lo fai, i tasti che li usano restano invisibili nel gioco.<br>','Download these files and copy them into the indicated folders (next to the other icons of your overlay), with this name. Until you do, the buttons that use them stay invisible in the game.<br>')+ks.map(k=>'<b>'+esc(gen[k].path)+'</b>').join('<br>');
   $('genbtns').innerHTML=ks.map(k=>`<a class="btn sm" style="text-decoration:none" download="${esc(gen[k].file)}" href="${gen[k].url}">⬇ ${esc(gen[k].file)}</a>`).join('');
 }
 /* cambiando il nome (Input) in Avanzate l'icona segue la nuova funzione */
@@ -871,7 +883,7 @@ $('fn').addEventListener('change',()=>{
   if(nn===fnOld||!(SYN[nn]||LBL[nn]))return;
   const r=pickIcon(nn);if(!r)return;
   d.x.overlay=r.path;sync();draw();genFill();
-  toast(iconMsg(r,nn).replace(/^con /,'Icona: '));
+  toast(iconMsg(r,nn).replace(/^(con|with) /,tr('Icona: ','Icon: ')));
 });
 
 /* ---- Modifica a schermo intero ---- */
@@ -882,16 +894,16 @@ function fsVerFill(){const v=$('fsver'),o=$('osel');v.innerHTML=o.innerHTML;v.va
 function fsBarSync(){
   const on=(a,v)=>{const b=document.querySelector('#fsbar [data-a="'+a+'"]');if(b)b.classList.toggle('on',!!v)};
   on('grid',$('grd').checked);on('snap',$('snp').checked);on('multi',multi);
-  const st=document.querySelector('#fsbar [data-a="step"]');if(st)st.innerHTML=$('gst').selectedOptions[0].textContent+'<small>Passo</small>';
+  const st=document.querySelector('#fsbar [data-a="step"]');if(st)st.innerHTML=$('gst').selectedOptions[0].textContent+'<small>'+tr('Passo','Step')+'</small>';
 }
 function fsBadge(){
   if(!isFs())return;
-  const n=sels.size;$('fsn').textContent=n===0?'Tocca un tasto':n===1&&D()?D().in.n:n+' tasti';
+  const n=sels.size;$('fsn').textContent=n===0?tr('Tocca un tasto','Tap a button'):n===1&&D()?D().in.n:n+tr(' tasti',' buttons');
   const W=$('svg').clientWidth,H=$('svg').clientHeight,ok=(W>=H)===($('orient').value==='landscape'),m=$('fsmsg');
-  m.hidden=ok;if(!ok)m.textContent=$('orient').value==='landscape'?'Ruota il telefono in orizzontale':'Ruota il telefono in verticale';
+  m.hidden=ok;if(!ok)m.textContent=$('orient').value==='landscape'?tr('Ruota il telefono in orizzontale','Rotate your phone to landscape'):tr('Ruota il telefono in verticale','Rotate your phone to portrait');
 }
 async function fsOpen(){
-  if(!M.overlays.length||!O().descs.length)return alert('Apri prima un file .cfg.');
+  if(!M.overlays.length||!O().descs.length)return alert(tr('Apri prima un file .cfg.','Open a .cfg file first.'));
   document.body.classList.add('fs');fsApi=false;fsSheet='';$('fsheet').hidden=true;$('fsbar').classList.remove('min');
   try{await $('dev').requestFullscreen({navigationUI:'hide'});fsApi=true}catch(e){}
   try{await screen.orientation.lock($('orient').value)}catch(e){}
@@ -905,7 +917,7 @@ function fsClose(){
   draw();setTimeout(draw,150);
 }
 function fsSheetShow(a){
-  if(a==='rep'&&sels.size!==1){toast('Per cambiare la funzione seleziona un solo tasto');return}
+  if(a==='rep'&&sels.size!==1){toast(tr('Per cambiare la funzione seleziona un solo tasto','To change the function, select a single button'));return}
   fsSheet=fsSheet===a?'':a;$('fsheet').hidden=!fsSheet;
   ['add','rep','img'].forEach(k=>{$('fsh-'+k).hidden=fsSheet!==k});
   if(fsSheet==='img'&&!$('fsdir').value)$('fsdir').value=$('dirin').value||prefDir;
@@ -917,17 +929,17 @@ function fsAct(a){
   else if(a==='step'){const g=$('gst');g.selectedIndex=(g.selectedIndex+1)%g.options.length;draw()}
   else if(a==='snap')$('snp').checked=!$('snp').checked;
   else if(a==='multi')$('bmulti').click();
-  else if(a==='dup'){if(sel>=0)$('ddup').click();else toast('Seleziona prima un tasto')}
-  else if(a==='del'){if(sel>=0)$('ddel').click();else toast('Seleziona prima un tasto')}
+  else if(a==='dup'){if(sel>=0)$('ddup').click();else toast(tr('Seleziona prima un tasto','Select a button first'))}
+  else if(a==='del'){if(sel>=0)$('ddel').click();else toast(tr('Seleziona prima un tasto','Select a button first'))}
   else if(a==='prev')pvOpen();
-  else if(a==='hide'){const b=$('fsbar');b.classList.toggle('min');document.querySelector('#fsbar [data-a="hide"]').innerHTML=b.classList.contains('min')?'☰':'▾<small>Nascondi</small>';$('fsheet').hidden=true;fsSheet=''}
+  else if(a==='hide'){const b=$('fsbar');b.classList.toggle('min');document.querySelector('#fsbar [data-a="hide"]').innerHTML=b.classList.contains('min')?'☰':'▾<small>'+tr('Nascondi','Hide')+'</small>';$('fsheet').hidden=true;fsSheet=''}
   else fsSheetShow(a);
   fsBarSync();
 }
 document.querySelectorAll('#fsbar [data-a]').forEach(b=>b.onclick=()=>fsAct(b.dataset.a));
 $('bfull').onclick=fsOpen;
 $('fsaddgo').onclick=()=>{$('addsel').value=$('fsadd').value;$('addbtn').click();toast($('addnote').textContent)};
-$('fsrepgo').onclick=()=>{if(sels.size!==1){toast('Seleziona un solo tasto');return}$('repsel').value=$('fsrep').value;$('repbtn').click();toast($('repnote').textContent)};
+$('fsrepgo').onclick=()=>{if(sels.size!==1){toast(tr('Seleziona un solo tasto','Select a single button'));return}$('repsel').value=$('fsrep').value;$('repbtn').click();toast($('repnote').textContent)};
 $('fsdirgo').onclick=()=>{$('dirin').value=$('fsdir').value;$('dirscope').value=$('fsscope').value;$('dirapply').click();toast($('dirnote').textContent)};
 $('fsver').onchange=e=>{$('osel').value=e.target.value;$('osel').dispatchEvent(new Event('change'));fsVerFill();draw();fsBarSync()};
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&fsApi&&isFs())fsClose();else if(isFs())setTimeout(draw,100)});
@@ -937,6 +949,89 @@ addEventListener('keydown',e=>{if(e.key==='Escape')fsClose()});
 
 
 fillOv();
+
+/* ---- Lingua / Language (IT / EN) ---- */
+const EN=Object.fromEntries([
+[`Editor overlay`,`Overlay editor`],[`per RetroArch`,`for RetroArch`],
+[`Apri .cfg`,`Open .cfg`],[`Sfondo`,`Background`],[`Annulla`,`Undo`],[`Salva .cfg`,`Save .cfg`],
+[`Orientamento`,`Orientation`],[`Orizzontale`,`Landscape`],[`Verticale`,`Portrait`],[`Versione da modificare`,`Version to edit`],
+[`Nessun file aperto`,`No file open`],[`Apri il file .cfg del tuo overlay per iniziare.`,`Open your overlay .cfg file to get started.`],
+[`Funzione`,`Function`],[`+ Aggiungi a questa versione`,`+ Add to this version`],
+[`Nuova funzione (cambia anche l'icona)`,`New function (also changes the icon)`],[`Sostituisci`,`Replace`],
+[`Cartella delle immagini`,`Images folder`],[`Applica a`,`Apply to`],
+[`Solo i tasti selezionati`,`Only the selected buttons`],[`Tutti i tasti di questa versione`,`All buttons in this version`],
+[`Tutti i tasti, in tutte le versioni`,`All buttons, in all versions`],[`Applica cartella`,`Apply folder`],
+[`Fine`,`Done`],[`Griglia`,`Grid`],[`Passo`,`Step`],[`Aggancia`,`Snap`],[`Multipla`,`Multi`],
+[`Duplica`,`Duplicate`],[`Elimina`,`Delete`],[`Aggiungi`,`Add`],[`Immagini`,`Images`],[`Anteprima`,`Preview`],[`Nascondi`,`Hide`],
+[`Versione`,`Version`],[`Sinistra`,`Left`],[`Su`,`Up`],[`Giù`,`Down`],[`Destra`,`Right`],[`Riduci barra`,`Shrink bar`],
+[`Passo griglia`,`Grid step`],[`es. img/clear`,`e.g. img/clear`],[`solo per overlay_next`,`only for overlay_next`],
+[`Tasti`,`Buttons`],[`Maniglia di ridimensionamento`,`Resize handle`],[`Sincronizza varianti`,`Sync variants`],
+[`Le modifiche a una versione vengono applicate alle altre versioni della stessa orientazione (orizzontale con orizzontale, verticale con verticale).`,`Changes to one version are applied to the other versions with the same orientation (landscape with landscape, portrait with portrait).`],
+[`2,5%`,`2.5%`],[`Selezione multipla`,`Multi-select`],[`Selezione multipla: sì`,`Multi-select: on`],[`Deseleziona tutto`,`Deselect all`],
+[`Modifica a schermo intero`,`Edit full screen`],[`Anteprima finale`,`Final preview`],[`Immagini tasti`,`Button images`],[`Togli sfondo`,`Remove background`],
+[`Come si usa`,`How to use`],[`Tocca un tasto per selezionarlo.`,`Tap a button to select it.`],[`Trascinalo per spostarlo.`,`Drag it to move it.`],
+[`Trascina il cerchietto bianco per ridimensionarlo.`,`Drag the white circle to resize it.`],
+[`Con`,`With`],[`puoi toccare più tasti: tocca di nuovo un tasto selezionato per toglierlo. Poi spostali, ingrandiscili o ridimensionali insieme.`,`you can tap several buttons: tap a selected button again to deselect it. Then move, enlarge or resize them together.`],
+[`Quando hai finito, premi`,`When you are done, press`],
+[`Tasto selezionato`,`Selected button`],[`Nessun tasto selezionato. Toccane uno nell'anteprima per modificarlo.`,`No button selected. Tap one in the preview to edit it.`],
+[`− Più piccolo`,`− Smaller`],[`+ Più grande`,`+ Larger`],[`Più piccolo`,`Smaller`],[`Più grande`,`Larger`],
+[`Sposta solo questo tasto`,`Move only this button`],[`Sostituisci con un'altra funzione`,`Replace with another function`],
+[`Nuova funzione`,`New function`],[`Grafica`,`Graphic`],[`Dove`,`Where`],
+[`In tutte le versioni del file`,`In all versions of the file`],[`Solo in questa versione`,`Only in this version`],
+[`Es.: selezioni "l" (L1) e lo trasformi in "save_state". Con Annulla puoi tornare indietro.`,`E.g.: you select "l" (L1) and turn it into "save_state". You can go back with Undo.`],
+[`Immagine del tasto`,`Button image`],[`Ripara croce (come nel file originale)`,`Repair d-pad (as in the original file)`],
+[`La croce si sposta e si ridimensiona sempre tutta insieme. Se è già storta, "Ripara" la rimette in forma mantenendo posizione e dimensione attuali.`,`The d-pad always moves and resizes as a whole. If it is already crooked, "Repair" puts it back in shape keeping the current position and size.`],
+[`Aggiungi tasto`,`Add button`],[`Azioni di RetroArch`,`RetroArch actions`],[`Tasti del gioco`,`Game buttons`],
+[`Salva stato`,`Save state`],[`Carica stato`,`Load state`],[`Velocizza (attiva/disattiva)`,`Fast-forward (toggle)`],[`Velocizza (tieni premuto)`,`Fast-forward (hold)`],
+[`Rallenta (attiva/disattiva)`,`Slow motion (toggle)`],[`Rallenta (tieni premuto)`,`Slow motion (hold)`],[`Riavvolgi`,`Rewind`],[`Pausa`,`Pause`],
+[`Avanza di un frame`,`Frame advance`],[`Slot salvataggio +`,`Save slot +`],[`Slot salvataggio −`,`Save slot −`],[`Mostra FPS`,`Show FPS`],
+[`Menu di RetroArch`,`RetroArch menu`],[`Overlay successivo`,`Next overlay`],[`Muto`,`Mute`],[`Esci dall'emulatore`,`Exit emulator`],
+[`Il tasto compare in un punto libero: trascinalo dove vuoi. Se non l'hai già caricata nel file, la grafica va impostata in Avanzate › Immagine.`,`The button appears in a free spot: drag it wherever you like. If the graphic is not already loaded in the file, set it in Advanced › Image.`],
+[`Carica una cartella di immagini`,`Load a folder of images`],
+[`Serve per vedere le icone vere e scegliere tra più set. Se il browser non permette di scegliere una cartella, usa "Immagini tasti" e seleziona più file.`,`Needed to see the real icons and choose between several sets. If your browser does not allow choosing a folder, use "Button images" and select multiple files.`],
+[`Cartella da usare`,`Folder to use`],[`Usa questa cartella anche per le icone delle nuove funzioni`,`Use this folder also for the icons of new functions`],
+[`Icone create`,`Created icons`],[`Sposta tutti i tasti di gioco`,`Move all game buttons`],
+[`Start, select e icone del menu restano fermi. Vale solo per la versione scelta in alto.`,`Start, select and menu icons stay in place. Applies only to the version chosen at the top.`],
+[`Avanzate`,`Advanced`],[`Nome overlay`,`Overlay name`],[`Nuovo`,`New`],[`Mostra zone combinate (es. a|b)`,`Show combined zones (e.g. a|b)`],
+[`Aggiungi elemento`,`Add element`],[`Larghezza`,`Width`],[`Altezza`,`Height`],[`Forma`,`Shape`],[`Immagine`,`Image`],[`Overlay di destinazione`,`Target overlay`],
+[`✕ Esci`,`✕ Exit`],[`Opacità`,`Opacity`],[`Originale`,`Original`],
+[`Quale versione vuoi modificare?`,`Which version do you want to edit?`],
+[`Se il file ha più varianti (es. analog, turbo), potrai sceglierle dopo dal menu "Versione da modificare".`,`If the file has several variants (e.g. analog, turbo), you can choose them later from the "Version to edit" menu.`],
+[`Applicare anche a un'altra versione?`,`Apply to another version as well?`],[`Hai modificato`,`You edited`],
+[`. Vuoi applicare le stesse modifiche anche a`,`. Do you want to apply the same changes to`],
+[`Le altre differenze tra le due versioni restano come sono.`,`Other differences between the two versions stay as they are.`],
+[`Sì, applica anche all'altra`,`Yes, apply to the other too`],[`No, solo questa`,`No, only this one`]
+]);
+const ATTRS=['placeholder','aria-label','title','label'],TITLE_IT=document.title;
+function applyLang(){
+  const en=LANG==='en',W=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+  while(n=W.nextNode()){
+    const pt=n.parentNode&&n.parentNode.tagName;if(pt==='SCRIPT'||pt==='STYLE')continue;
+    if(n.__it===undefined)n.__it=n.nodeValue;
+    const o=n.__it,k=o.trim();if(!k)continue;
+    n.nodeValue=en&&EN[k]!==undefined?o.replace(k,()=>EN[k]):o;
+  }
+  document.querySelectorAll('[placeholder],[aria-label],[title],[label]').forEach(el=>{
+    if(el.id==='lsel'||el.id==='dlang')return;
+    el.__ia=el.__ia||{};
+    ATTRS.forEach(a=>{if(!el.hasAttribute(a))return;
+      if(el.__ia[a]===undefined)el.__ia[a]=el.getAttribute(a);
+      const o=el.__ia[a];el.setAttribute(a,en&&EN[o]!==undefined?EN[o]:o)})
+  });
+  document.title=en?'RetroArch overlay editor':TITLE_IT;
+}
+function setLang(l){
+  LANG=l==='en'?'en':'it';document.documentElement.lang=LANG;$('lsel').value=LANG;
+  applyLang();
+  $('repimg').dataset.k='';$('simg').dataset.k='';dirKey='';
+  fillOv();fsBarSync();
+}
+$('lsel').onchange=e=>setLang(e.target.value);
+const dLang=/^it/i.test(navigator.language||'')?'it':'en';
+$('dlang').addEventListener('close',()=>setLang($('dlang').returnValue||dLang));
+$('dlang').querySelectorAll('button').forEach(b=>b.classList.toggle('y',b.value===dLang));
+setLang(dLang);
+$('dlang').returnValue='';$('dlang').showModal();
 </script>
 </body>
 </html>
