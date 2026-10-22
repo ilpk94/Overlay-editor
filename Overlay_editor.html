@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor overlay RetroArch</title>
+<style>
+:root{color-scheme:light dark;--bg:#eef0f3;--pn:#fff;--tx:#16181d;--mu:#667085;--bd:#e2e5ea;--fld:#f4f5f7;--ac:#0d9488;--ac2:#fff;--acs:rgba(13,148,136,.12);--sh:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1115;--pn:#181b21;--tx:#eceef2;--mu:#98a0ae;--bd:#2a2f38;--fld:#20242c;--ac:#2dd4bf;--ac2:#04201d;--acs:rgba(45,212,191,.14);--sh:0 1px 2px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,"Segoe UI",Roboto,sans-serif}
+.i{width:18px;height:18px;flex:none}.i.big{width:28px;height:28px}
+header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--pn);border-bottom:1px solid var(--bd)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--acs);color:var(--ac)}
+.brand b{display:block;font-size:16px;line-height:1.2}.brand span{font-size:12px;color:var(--mu)}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+button,.btn,select,input{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 14px;background:var(--pn);border:1px solid var(--bd);border-radius:10px;cursor:pointer;font-weight:500;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--ac);background:var(--acs)}
+.btn.p{background:var(--ac);border-color:var(--ac);color:var(--ac2);font-weight:600}.btn.p:hover{filter:brightness(1.07)}
+.btn.sm{min-height:34px;padding:0 10px;font-size:13px}
+.btn.danger:hover{border-color:#e5484d;background:rgba(229,72,77,.1)}
+.fbtn input{display:none}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;padding:16px;max-width:1500px;margin:auto;align-items:start}
+@media(max-width:960px){main{grid-template-columns:1fr;padding:10px}}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:14px;padding:14px;box-shadow:var(--sh);display:grid;gap:10px;margin-bottom:14px}
+aside .card:last-child{margin-bottom:0}
+h2{margin:0;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--mu);font-weight:600}
+.bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}.bar .grow{flex:1;min-width:200px}
+.fld{display:grid;gap:4px;font-size:12px;color:var(--mu);font-weight:500}
+.fld input,.fld select{background:var(--fld);border:1px solid var(--bd);border-radius:9px;min-height:40px;padding:0 10px;color:var(--tx);width:100%;font-size:15px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.dev{position:relative;background:#090a0d;border-radius:26px;padding:12px;box-shadow:0 12px 32px rgba(0,0,0,.28),inset 0 0 0 2px #262a32}
+svg#svg{width:100%;max-height:78vh;background:#1a1d24 radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px) 0 0/22px 22px;border-radius:12px;touch-action:pinch-zoom;user-select:none;display:block;margin:auto}
+#empty{position:absolute;inset:12px;display:grid;place-content:center;justify-items:center;gap:8px;text-align:center;color:#d5d9e0;padding:20px;pointer-events:none}
+#empty button{pointer-events:auto}#empty p{margin:0;color:#9aa3b2}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin-top:12px;font-size:13px;color:var(--mu)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}.dot.g{background:#2dd4bf}.dot.y{background:#f0b03c}.dot.m{background:#a0a4af}.dot.r{background:#fff;box-shadow:0 0 0 3px #0d9488}
+.lact{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.how{margin:0;padding-left:22px;font-size:14px}.how li{margin:3px 0}
+.chip{display:inline-block;background:var(--acs);color:var(--ac);border-radius:8px;padding:1px 10px;font-weight:700;font-size:15px;text-transform:none;letter-spacing:0}
+.sel-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.empty-sel{margin:0;color:var(--mu);font-size:14px}
+.pad{display:grid;grid-template-columns:repeat(3,48px);grid-auto-rows:48px;gap:6px;justify-content:center}
+.pad button{min-height:0;padding:0;font-size:20px;line-height:1}
+.pad i{background:var(--fld);border-radius:10px}
+.hint{color:var(--mu);font-size:13px;margin:0}
+.szp{display:grid;gap:6px}
+#addsel,#repsel,#repimg,#repscope{background:var(--fld);border:1px solid var(--bd);border-radius:9px;min-height:40px;padding:0 10px;color:var(--tx);width:100%;font-size:15px}
+details summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details summary::after{content:"▾";color:var(--mu)}details[open] summary::after{content:"▴"}
+details>div{display:grid;gap:10px;margin-top:12px}
+ul{list-style:none;margin:0;padding:0;max-height:220px;overflow:auto;border:1px solid var(--bd);border-radius:10px}
+li{padding:6px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+li small{color:var(--mu)}li.on{background:var(--ac);color:var(--ac2)}li.on small{color:inherit}
+.hit{fill:rgba(255,255,255,.08);stroke:#fff;stroke-opacity:.7;stroke-dasharray:5 4}
+.vis{fill:rgba(45,212,191,.6);stroke:#8ee7dc}
+.s .vis{fill:rgba(240,176,60,.72);stroke:#f5d28a}
+.m .vis{fill:rgba(160,164,175,.55);stroke:#c8cbd3}
+.c .hit{fill:rgba(255,90,90,.35);stroke:#ff8a8a;stroke-opacity:1}
+.im .vis{fill:transparent;stroke:rgba(255,255,255,.35)}
+.k{cursor:grab}.on .vis{stroke:#fff;stroke-width:3}
+.hd{fill:#fff;stroke:#0d9488;stroke-width:3;cursor:nwse-resize}
+text{fill:#fff;font:700 13px system-ui,sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+dialog{border:1px solid var(--bd);border-radius:18px;background:var(--pn);color:var(--tx);padding:22px;width:min(92vw,400px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog h2{font-size:18px;text-transform:none;letter-spacing:0;color:var(--tx);margin-bottom:6px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.choices button{display:grid;justify-items:center;gap:10px;padding:18px 10px;border:2px solid var(--bd);border-radius:14px;background:var(--fld);cursor:pointer;font-weight:600}
+.choices button:hover{border-color:var(--ac);background:var(--acs)}
+.choices svg{width:64px;height:64px;color:var(--ac)}
+.choices.stack{grid-template-columns:1fr}
+.choices button.y{background:var(--ac);border-color:var(--ac);color:var(--ac2)}
+@media(max-width:700px){header{position:static}.acts{display:grid;grid-template-columns:1fr 1fr;width:100%}}
+#pv{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:100;background:#000;touch-action:pinch-zoom;user-select:none;-webkit-user-select:none}
+#pv svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#pvbar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom,0px));display:flex;gap:12px;align-items:center;padding:6px 10px;background:rgba(15,17,21,.92);border:1px solid var(--bd);border-radius:12px;color:var(--tx);font-size:13px;white-space:nowrap;z-index:3}
+#pvbar.min>:not(#pvt){display:none}#pvbar.min{padding:4px}
+#pvbar label{display:flex;gap:6px;align-items:center}#pvbar input[type=range]{width:90px}
+#pvbar .btn{min-height:34px;padding:0 10px}
+#pvmsg,#pvpr{position:absolute;left:50%;transform:translateX(-50%);max-width:90%;padding:6px 12px;border-radius:10px;font-size:13px;text-align:center;pointer-events:none;z-index:3}
+#pvmsg{top:calc(10px + env(safe-area-inset-top,0px));background:rgba(229,72,77,.92);color:#fff}
+#pvpr{top:calc(10px + env(safe-area-inset-top,0px));background:rgba(15,17,21,.8);color:#fff;font-weight:600}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(15,17,21,.96);color:#fff;border:1px solid var(--bd);padding:10px 14px;border-radius:12px;font-size:14px;z-index:200;max-width:90%;text-align:center}
+body.fs{overflow:hidden}
+body.fs .dev{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:90;border-radius:0;padding:0;background:#000;box-shadow:none}
+body.fs svg#svg{max-height:none;width:100%;height:100%;border-radius:0;margin:0}
+#fsbar,#fsheet,#fstop,#fsmsg{display:none}
+#fsbar,#fsheet,#fstop{color-scheme:dark;--tx:#eceef2;--fld:#20242c;--bd:#2a2f38;--mu:#98a0ae;--pn:#181b21;--ac:#2dd4bf;--ac2:#04201d}
+body.fs #fsbar{display:flex;position:absolute;left:0;right:0;bottom:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));gap:6px;overflow-x:auto;background:rgba(15,17,21,.93);border-top:1px solid var(--bd);z-index:3;align-items:stretch;-webkit-overflow-scrolling:touch}
+#fsbar button{flex:0 0 auto;display:grid;justify-items:center;align-content:center;gap:2px;min-width:52px;min-height:48px;padding:4px 8px;background:var(--fld);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:18px;line-height:1;cursor:pointer}
+#fsbar button small{font-size:10px;color:var(--mu);white-space:nowrap}
+#fsbar button.on{background:var(--ac);border-color:var(--ac);color:var(--ac2)}#fsbar button.on small{color:var(--ac2)}
+#fsbar button.chip{font-size:14px;font-weight:700;min-width:48px}
+#fsbar .sep{flex:0 0 1px;background:var(--bd);margin:0 2px}
+#fsbar.min{left:auto;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));padding:0;background:transparent;border:0;overflow:visible}
+#fsbar.min>:not([data-a="hide"]){display:none}
+body.fs #fstop{display:flex;position:absolute;left:8px;top:calc(8px + env(safe-area-inset-top,0px));gap:8px;align-items:center;z-index:3;max-width:70%}
+#fstop select{background:rgba(15,17,21,.85);border:1px solid var(--bd);border-radius:10px;min-height:34px;padding:0 8px;color:#fff;max-width:200px}
+#fsn{background:rgba(15,17,21,.85);color:#fff;border:1px solid var(--bd);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:600}
+body.fs #fsheet:not([hidden]){display:grid;gap:8px;position:absolute;left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;padding:12px;background:rgba(15,17,21,.97);border:1px solid var(--bd);border-radius:14px;z-index:4;color:var(--tx)}
+body.fs #fsmsg:not([hidden]){display:block;position:absolute;left:50%;top:calc(52px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:90%;padding:8px 12px;background:rgba(229,72,77,.92);color:#fff;border-radius:10px;font-size:13px;text-align:center;pointer-events:none;z-index:3}
+#dirin{background:var(--fld);border:1px solid var(--bd);border-radius:9px;min-height:40px;padding:0 10px;color:var(--tx);width:100%;font-size:15px}
+#simg,#dirscope,#fsadd,#fsrep,#fsscope,#fsdir{background:var(--fld);border:1px solid var(--bd);border-radius:9px;min-height:40px;padding:0 10px;color:var(--tx);width:100%;font-size:15px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo"><svg class="i big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h4M8 10v4"/><circle cx="15" cy="11" r=".6"/><circle cx="17.5" cy="13" r=".6"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg></div><div><b>Editor overlay</b><span>per RetroArch</span></div></div>
+  <div class="acts">
+    <label class="btn fbtn"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Apri .cfg<input type="file" id="fcfg" accept=".cfg,.txt"></label>
+    <label class="btn fbtn"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 8"/></svg>Sfondo<input type="file" id="fbg" accept="image/*"></label>
+    <button id="bundo" class="btn"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Annulla</button>
+    <button id="bsave" class="btn p"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8"/><path d="M8 21v-7h8v7"/></svg>Salva .cfg</button>
+  </div>
+</header>
+<main>
+  <section>
+    <div class="bar">
+      <label class="fld"><span>Orientamento</span><select id="orient"><option value="landscape">Orizzontale</option><option value="portrait">Verticale</option></select></label>
+      <label class="fld grow"><span>Versione da modificare</span><select id="osel"></select></label>
+    </div>
+    <div class="dev" id="dev">
+      <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="empty"><b>Nessun file aperto</b><p>Apri il file .cfg del tuo overlay per iniziare.</p><button class="btn p" onclick="document.getElementById('fcfg').click()">Apri .cfg</button></div>
+      <div id="toast" hidden></div>
+      <div id="fstop"><select id="fsver" aria-label="Versione"></select><span id="fsn"></span></div>
+      <div id="fsmsg" hidden></div>
+      <div id="fsheet" hidden>
+        <div id="fsh-add" hidden><label class="fld">Funzione<select id="fsadd"></select></label><button class="btn p" id="fsaddgo">+ Aggiungi a questa versione</button></div>
+        <div id="fsh-rep" hidden><label class="fld">Nuova funzione (cambia anche l'icona)<select id="fsrep"></select></label><button class="btn p" id="fsrepgo">Sostituisci</button></div>
+        <div id="fsh-img" hidden><label class="fld">Cartella delle immagini<input id="fsdir" list="dirlist" placeholder="es. img/clear"></label><label class="fld">Applica a<select id="fsscope"><option value="sel">Solo i tasti selezionati</option><option value="ver">Tutti i tasti di questa versione</option><option value="all">Tutti i tasti, in tutte le versioni</option></select></label><button class="btn p" id="fsdirgo">Applica cartella</button></div>
+      </div>
+      <div id="fsbar">
+        <button data-a="exit" class="on">✓<small>Fine</small></button>
+        <button data-a="undo">↶<small>Annulla</small></button>
+        <span class="sep"></span>
+        <button class="chip" data-sz="-10">−10%</button><button class="chip" data-sz="-5">−5%</button><button class="chip" data-sz="5">+5%</button><button class="chip" data-sz="10">+10%</button>
+        <span class="sep"></span>
+        <button data-a="grid">▦<small>Griglia</small></button><button data-a="step">5%<small>Passo</small></button><button data-a="snap">🧲<small>Aggancia</small></button><button data-a="multi">☑<small>Multipla</small></button>
+        <span class="sep"></span>
+        <button class="chip" data-mvs="-.005,0" aria-label="Sinistra">←</button><button class="chip" data-mvs="0,-.005" aria-label="Su">↑</button><button class="chip" data-mvs="0,.005" aria-label="Giù">↓</button><button class="chip" data-mvs=".005,0" aria-label="Destra">→</button>
+        <span class="sep"></span>
+        <button data-a="dup">⧉<small>Duplica</small></button><button data-a="del">🗑<small>Elimina</small></button><button data-a="add">＋<small>Aggiungi</small></button><button data-a="rep">⇄<small>Funzione</small></button><button data-a="img">🖼<small>Immagini</small></button><button data-a="prev">▶<small>Anteprima</small></button>
+        <span class="sep"></span>
+        <button data-a="hide">▾<small>Nascondi</small></button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="dot g"></i>Tasti</span><span><i class="dot y"></i>Start / Select</span><span><i class="dot m"></i>Menu</span><span><i class="dot r"></i>Maniglia di ridimensionamento</span>
+      <label style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="grd" checked>Griglia</label><select id="gst" aria-label="Passo griglia" style="background:var(--fld);border:1px solid var(--bd);border-radius:8px;min-height:30px;padding:0 6px;color:var(--tx)"><option value="0.025">2,5%</option><option value="0.05" selected>5%</option><option value="0.1">10%</option></select><label style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="snp">Aggancia</label><label style="display:inline-flex;gap:6px;align-items:center" title="Le modifiche a una versione vengono applicate alle altre versioni della stessa orientazione (orizzontale con orizzontale, verticale con verticale)."><input type="checkbox" id="syn" checked>Sincronizza varianti</label>
+      <div class="lact"><button id="bmulti" class="btn sm">Selezione multipla</button><button id="bclr" class="btn sm" hidden>Deseleziona tutto</button><button id="bfull" class="btn sm p">Modifica a schermo intero</button><button id="bprev" class="btn sm">Anteprima finale</button><label class="btn sm fbtn">Immagini tasti<span id="nimg"></span><input type="file" id="fimg" accept="image/*" multiple></label><button id="bnobg" class="btn sm">Togli sfondo</button></div>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <h2>Come si usa</h2>
+      <ol class="how"><li>Tocca un tasto per selezionarlo.</li><li>Trascinalo per spostarlo.</li><li>Trascina il cerchietto bianco per ridimensionarlo.</li><li>Con <b>Selezione multipla</b> puoi toccare più tasti: tocca di nuovo un tasto selezionato per toglierlo. Poi spostali, ingrandiscili o ridimensionali insieme.</li><li>Quando hai finito, premi <b>Salva .cfg</b>.</li></ol>
+    </div>
+    <div class="card" id="sc0"><h2>Tasto selezionato</h2><p class="empty-sel">Nessun tasto selezionato. Toccane uno nell'anteprima per modificarlo.</p></div>
+    <div class="card" id="sc" hidden>
+      <div class="sel-h"><h2>Tasto selezionato</h2><span class="chip" id="sname"></span></div>
+      <div class="row"><button id="bminus" class="btn">− Più piccolo</button><button id="bplus" class="btn">+ Più grande</button></div>
+      <div class="szp"><span class="hint">Più piccolo</span><div class="row"><button class="btn sm" data-sz="-20">−20%</button><button class="btn sm" data-sz="-10">−10%</button><button class="btn sm" data-sz="-5">−5%</button></div>
+      <span class="hint">Più grande</span><div class="row"><button class="btn sm" data-sz="5">+5%</button><button class="btn sm" data-sz="10">+10%</button><button class="btn sm" data-sz="20">+20%</button></div></div>
+      <p class="hint" id="mvhint">Sposta solo questo tasto</p>
+      <div class="pad">
+        <i></i><button class="btn" data-mvs="0,-.005" aria-label="Su">↑</button><i></i>
+        <button class="btn" data-mvs="-.005,0" aria-label="Sinistra">←</button><i></i><button class="btn" data-mvs=".005,0" aria-label="Destra">→</button>
+        <i></i><button class="btn" data-mvs="0,.005" aria-label="Giù">↓</button><i></i>
+      </div>
+      <details id="repd">
+        <summary><b>Sostituisci con un'altra funzione</b></summary>
+        <div>
+          <label class="fld">Nuova funzione<select id="repsel"></select></label>
+          <label class="fld">Grafica<select id="repimg"></select></label>
+          <label class="fld">Dove<select id="repscope"><option value="all">In tutte le versioni del file</option><option value="one">Solo in questa versione</option></select></label>
+          <button id="repbtn" class="btn p">Sostituisci</button>
+          <p class="hint" id="repnote">Es.: selezioni "l" (L1) e lo trasformi in "save_state". Con Annulla puoi tornare indietro.</p>
+        </div>
+      </details>
+      <label class="fld">Immagine del t
