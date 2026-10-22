@@ -1,4 +1,33 @@
 <!DOCTYPE html>
+<!--
+  NOTA PER CHI MODIFICA QUESTO FILE (persona o assistente AI) / NOTE FOR WHOEVER EDITS THIS FILE
+
+  IT — Il file è bilingue (italiano / inglese). Ogni testo visibile all'utente, nuovo o modificato,
+  va aggiornato in ENTRAMBE le lingue, altrimenti resta in italiano anche con l'interfaccia in inglese.
+    1. Testi fissi nell'HTML (pulsanti, etichette, titoli, opzioni dei menu, placeholder, aria-label, title):
+       scrivili in italiano nell'HTML e aggiungi la voce [`italiano`,`english`] nel dizionario EN
+       (in fondo allo script, sezione "Lingua / Language"). La chiave deve coincidere esattamente
+       con il testo italiano (spazi iniziali/finali esclusi).
+    2. Testi creati dal codice JavaScript (alert, confirm, toast, note, messaggi, testi inseriti
+       con innerHTML/textContent): usa tr('italiano','english'); in alcuni casi con concatenazioni
+       va tradotta tutta la frase, non solo i pezzi.
+    3. Il testo dei nuovi elementi creati da innerHTML va riletto da applyLang() / setLang():
+       se serve, richiama setLang(LANG) o ridisegna l'elemento con tr().
+  Non tradurre i nomi tecnici del file .cfg (a, b, start, save_state, ...). Lingua attiva: variabile LANG ('it' | 'en').
+
+  EN — This file is bilingual (Italian / English). Every user-visible string, new or changed, must be
+  updated in BOTH languages, otherwise it stays Italian even when the UI is set to English.
+    1. Static HTML text (buttons, labels, headings, menu options, placeholder, aria-label, title):
+       write it in Italian in the HTML and add a [`italiano`,`english`] entry to the EN dictionary
+       (end of the script, "Lingua / Language" section). The key must match the Italian text exactly
+       (leading/trailing whitespace excluded).
+    2. Text built by JavaScript (alert, confirm, toast, notes, messages, text set via
+       innerHTML/textContent): use tr('italiano','english'); with concatenations, translate the whole
+       sentence, not just the pieces.
+    3. Text of new elements created via innerHTML must be re-read by applyLang() / setLang():
+       if needed, call setLang(LANG) or redraw the element with tr().
+  Do not translate the technical .cfg names (a, b, start, save_state, ...). Active language: LANG variable ('it' | 'en').
+-->
 <html lang="it">
 <head>
 <meta charset="utf-8">
