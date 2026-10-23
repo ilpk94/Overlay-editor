@@ -135,6 +135,14 @@ body.fs #fsheet:not([hidden]){display:grid;gap:8px;position:absolute;left:8px;ri
 body.fs #fsmsg:not([hidden]){display:block;position:absolute;left:50%;top:calc(52px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:90%;padding:8px 12px;background:rgba(229,72,77,.92);color:#fff;border-radius:10px;font-size:13px;text-align:center;pointer-events:none;z-index:3}
 #dirin{background:var(--fld);border:1px solid var(--bd);border-radius:9px;min-height:40px;padding:0 10px;color:var(--tx);width:100%;font-size:15px}
 #simg,#dirscope,#fsadd,#fsrep,#fsscope,#fsdir{background:var(--fld);border:1px solid var(--bd);border-radius:9px;min-height:40px;padding:0 10px;color:var(--tx);width:100%;font-size:15px}
+.vl{max-height:none;border:0;display:grid;gap:6px;overflow:visible}
+.vl li{display:grid;grid-template-columns:1fr auto;gap:6px 8px;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:8px 10px;cursor:default;background:var(--fld)}
+.vl li.cu{border-color:var(--ac)}
+.vl .vn{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:inherit}
+.vl .vn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vl .vn small{color:var(--mu)}
+.vl .star{color:var(--ac);font-weight:700}
+.vl .va{display:flex;gap:6px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -240,6 +248,11 @@ body.fs #fsmsg:not([hidden]){display:block;position:absolute;left:50%;top:calc(5
       <h2>Icone create</h2>
       <p class="hint" id="gentxt"></p>
       <div class="row" id="genbtns"></div>
+    </div>
+    <div class="card" id="vcard">
+      <h2>Versioni nel file</h2>
+      <p class="hint">La versione con la stella ★ è quella che si apre all'avvio del gioco. Puoi sceglierne un'altra o eliminare quelle che non ti servono.</p>
+      <ul id="vlist" class="vl"></ul>
     </div>
     <div class="card">
       <h2>Sposta tutti i tasti di gioco</h2>
@@ -414,7 +427,7 @@ function fillOv(){
   $('osel').innerHTML=v.map(i=>`<option value="${i}">${esc(uq(gp(M.overlays[i],'name'))||'overlay '+i)}</option>`).join('');
   $('osel').value=cur;const o=O();
   $('oname').value=uq(gp(o,'name'));$('orm').value=gp(o,'range_mod');$('oam').value=gp(o,'alpha_mod');
-  if(sel>=o.descs.length)sel=-1;sync();draw();
+  if(sel>=o.descs.length)sel=-1;renderVers();sync();draw();
 }
 
 $('fcfg').onchange=e=>{const f=e.target.files[0];if(!f)return;fname=f.name;
@@ -509,10 +522,56 @@ $('osel').onchange=e=>{const to=+e.target.value;leave(()=>{cur=to;sel=-1;fillOv(
 $('oadd').onclick=()=>{snap();M.overlays.push(newOv('overlay-'+(M.overlays.length+1)));cur=M.overlays.length-1;sel=-1;fillOv()};
 $('odup').onclick=()=>{snap();const c=JSON.parse(JSON.stringify(O()));sp(c,'name','"'+uq(gp(c,'name'))+tr('-copia','-copy')+'"');c.base=geo(c);
   M.overlays.push(c);cur=M.overlays.length-1;sel=-1;fillOv()};
-$('odel').onclick=()=>{if(M.overlays.length<2)return alert(tr('Serve almeno un overlay.','At least one overlay is required.'));
-  if(!confirm(tr('Eliminare questo overlay?','Delete this overlay?')))return;snap();M.overlays.splice(cur,1);cur=0;sel=-1;fillOv()};
+const ovName=o=>uq(gp(o,'name'));
+const refsTo=(name,skip)=>{const r=[];M.overlays.forEach((o,i)=>{if(o===skip)return;o.descs.forEach((d,j)=>{if(d.in.n==='overlay_next'&&d.x.next_target&&uq(d.x.next_target)===name)r.push([i,j])})});return r};
+function renderVers(){
+  const ul=$('vlist');if(!ul)return;
+  ul.innerHTML=M.overlays.map((o,i)=>{
+    const n=ovName(o)||'overlay '+i,k=kind(o),main=i===0,dupN=M.overlays.filter(x=>ovName(x)===n).length>1;
+    const sub=(k==='portrait'?tr('verticale','portrait'):k==='landscape'?tr('orizzontale','landscape'):'')+(o.descs.length<=2?(k?' · ':'')+tr('nascosta','hidden'):'')+(dupN?(k?' · ':'')+tr('⚠ nome duplicato','⚠ duplicate name'):'');
+    return `<li class="${i===cur?'cu':''}"><button class="vn" data-vgo="${i}"><b>${main?'<span class="star">★</span> ':''}${esc(n)}</b><small>${esc(sub||'')}${main?(sub?' · ':'')+tr('si apre all\'avvio','opens at start'):''}</small></button>
+    <div class="va">${main?'':`<button class="btn sm" data-vmain="${i}">${tr('Rendi principale','Make main')}</button>`}<button class="btn sm danger" data-vdel="${i}" aria-label="${tr('Elimina','Delete')}">🗑</button></div></li>`}).join('');
+}
+$('vlist').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.vgo!==undefined){const i=+b.dataset.vgo,k=kind(M.overlays[i]);leave(()=>{if(i>=M.overlays.length)return;if(k)$('orient').value=k;cur=i;sel=-1;fillOv()})}
+  else if(b.dataset.vmain!==undefined)setMain(+b.dataset.vmain);
+  else if(b.dataset.vdel!==undefined)delOv(+b.dataset.vdel);
+};
+const isOff=d=>d.in.n==='overlay_next'&&d.x.next_target&&(d.in.x>1.5||d.in.y>1.5);
+function fixBackLink(o){
+  const off=o.descs.find(isOff);if(!off)return '';
+  const P=M.overlays.find(x=>x!==o&&ovName(x)===uq(off.x.next_target));if(!P)return '';
+  const back=P.descs.find(isOff),nm='"'+ovName(o)+'"';
+  if(back){if(back.x.next_target===nm)return '';back.x.next_target=nm}
+  else{const por=kind(P)==='portrait';P.descs.push({in:{n:'overlay_next',x:2.35,y:por?2.94792:2.08889,s:'radial',w:por?.0463:.02604,h:por?.02604:.0463},x:{next_target:nm}})}
+  P.base=geo(P);return ovName(P);
+}
+function setMain(i){
+  if(i<=0||i>=M.overlays.length)return;
+  snap();const o=M.overlays[i],c=O();
+  M.overlays.splice(i,1);M.overlays.unshift(o);cur=M.overlays.indexOf(c);sel=-1;const fx=fixBackLink(o);fillOv();
+  toast(tr('«'+ovName(o)+'» ora si apre all\'avvio'+(fx?'. Il ritorno da «'+fx+'» ora porta qui.':''),'“'+ovName(o)+'” now opens at start'+(fx?'. The way back from “'+fx+'” now leads here.':'')));
+}
+function delOv(i){
+  if(M.overlays.length<2)return alert(tr('Serve almeno un overlay.','At least one overlay is required.'));
+  const o=M.overlays[i],n=ovName(o),refs=M.overlays.some(x=>x!==o&&ovName(x)===n)?[]:refsTo(n,o),wasMain=i===0,next=M.overlays[wasMain?1:0];
+  let msg=tr('Eliminare «'+n+'»?','Delete “'+n+'”?');
+  if(refs.length)msg+='\n\n'+tr(refs.length+(refs.length===1?' pulsante in altre versioni porta':' pulsanti in altre versioni portano')+' a questa versione e verrà rimosso.',refs.length+(refs.length===1?' button in other versions leads':' buttons in other versions lead')+' to this version and will be removed.');
+  if(wasMain)msg+='\n\n'+tr('Era la versione principale: all\'avvio si aprirà «'+ovName(next)+'».','It was the main version: «'+ovName(next)+'» will open at start instead.');
+  if(!confirm(msg))return;
+  snap();const c=O();
+  refs.slice().sort((a,b)=>b[1]-a[1]).forEach(([oi,dj])=>M.overlays[oi].descs.splice(dj,1));
+  refs.forEach(([oi])=>{M.overlays[oi].base=geo(M.overlays[oi])});
+  M.overlays.splice(i,1);
+  cur=o===c?0:M.overlays.indexOf(c);if(cur<0)cur=0;sel=-1;
+  const k=kind(M.overlays[cur]);if(k)$('orient').value=k;
+  fillOv();
+}
+$('odel').onclick=()=>delOv(cur);
 $('oname').onfocus=$('orm').onfocus=$('oam').onfocus=snap;
-$('oname').oninput=e=>{sp(O(),'name','"'+e.target.value+'"');[...$('osel').options].forEach(x=>{if(+x.value===cur)x.text=e.target.value});draw()};
+$('oname').oninput=e=>{const old=ovName(O()),shared=M.overlays.some(x=>x!==O()&&ovName(x)===old);sp(O(),'name','"'+e.target.value+'"');
+  if(old&&!shared&&old!==e.target.value)M.overlays.forEach(o=>o.descs.forEach(d=>{if(d.in.n==='overlay_next'&&d.x.next_target&&uq(d.x.next_target)===old)d.x.next_target='"'+e.target.value+'"'}));renderVers();[...$('osel').options].forEach(x=>{if(+x.value===cur)x.text=e.target.value});draw()};
 $('orm').oninput=e=>{sp(O(),'range_mod',e.target.value);draw()};
 $('oam').oninput=e=>{sp(O(),'alpha_mod',e.target.value);draw()};
 $('orient').onchange=()=>leave(()=>{cur=vis()[0];sel=-1;fillOv()});$('showc').onchange=draw;
@@ -722,7 +781,7 @@ function pvDraw(){
   let h=bg?`<image href="${bg}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
     :`<defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3350"/><stop offset="1" stop-color="#10131f"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#pg)"/>`;
   if($('pvg').checked)h+=gridSvg(W,H);
-  const oo=$('pvor').checked&&orig&&orig.overlays[cur]&&gp(orig.overlays[cur],'name')===gp(o,'name')?orig.overlays[cur]:null;
+  const oo=$('pvor').checked&&orig?orig.overlays.find(x=>gp(x,'name')===gp(o,'name'))||null:null;
   let gh='',bt='';
   o.descs.forEach((d,i)=>{
     const a=d.in;if(a.n.includes('|')||/_area$/.test(a.n))return;
@@ -1029,7 +1088,9 @@ const EN=Object.fromEntries([
 [`Applicare anche a un'altra versione?`,`Apply to another version as well?`],[`Hai modificato`,`You edited`],
 [`. Vuoi applicare le stesse modifiche anche a`,`. Do you want to apply the same changes to`],
 [`Le altre differenze tra le due versioni restano come sono.`,`Other differences between the two versions stay as they are.`],
-[`Sì, applica anche all'altra`,`Yes, apply to the other too`],[`No, solo questa`,`No, only this one`]
+[`Sì, applica anche all'altra`,`Yes, apply to the other too`],[`No, solo questa`,`No, only this one`],
+[`Versioni nel file`,`Versions in the file`],
+[`La versione con la stella ★ è quella che si apre all'avvio del gioco. Puoi sceglierne un'altra o eliminare quelle che non ti servono.`,`The version with the star ★ is the one that opens when the game starts. You can pick another one or delete the ones you don't need.`]
 ]);
 const ATTRS=['placeholder','aria-label','title','label'],TITLE_IT=document.title;
 function applyLang(){
